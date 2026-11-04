@@ -104,6 +104,7 @@
     <div class="grid" id="grid"></div>
   </div>
   <div class="legend"><span><i style="background:var(--accent-bg)"></i>출장</span><span><i style="background:var(--leave-bg)"></i>휴가·기타</span><span><i style="background:var(--event-bg)"></i>행사</span></div>
+  <div id="rangeNote" class="meta" style="display:none; margin-top:8px"></div>
   <footer>출장·휴가는 UWIN 부재 정보(이름·구분·날짜·시간, 일부 출장은 출장목적), 행사는 주간보고 기준입니다. 날짜를 누르면 세부 내용이 열립니다. 검색엔진에 노출되지 않도록 설정돼 있습니다.</footer>
 </main>
 
@@ -130,7 +131,8 @@
   var todayIso = iso(today);
   var items = {};            // 날짜 → [{kind:'event'|'trip'|'leave', ...}]
   var view = { y: today.getFullYear(), m: today.getMonth() };
-  var minMonth = view.y * 12 + view.m, maxMonth = minMonth;
+  var minMonth = view.y * 12 + view.m, maxMonth = minMonth + 3; // 이번 달부터 3개월 뒤까지
+  var rangeTo = null; // UWIN 출장·휴가를 조회한 마지막 날짜
   var selected = null, lastFocus = null;
 
   function add(k, it) { (items[k] = items[k] || []).push(it); }
@@ -147,6 +149,12 @@
     $('title').textContent = y + '년 ' + (m + 1) + '월';
     $('prev').disabled = (y * 12 + m) <= minMonth;
     $('next').disabled = (y * 12 + m) >= maxMonth;
+    var lastDay = y + '-' + pad(m + 1) + '-' + pad(new Date(y, m + 1, 0).getDate());
+    var note = $('rangeNote');
+    if (rangeTo && lastDay > rangeTo) {
+      note.textContent = '※ 출장·휴가는 ' + Number(rangeTo.slice(5, 7)) + '월 ' + Number(rangeTo.slice(8)) + '일까지만 조회합니다. 그 이후 날짜에 표시가 없어도 부재가 없다는 뜻은 아닙니다.';
+      note.style.display = 'block';
+    } else { note.style.display = 'none'; }
     var grid = $('grid'); grid.textContent = '';
     var first = new Date(y, m, 1).getDay(), days = new Date(y, m + 1, 0).getDate();
     var maxChips = window.innerWidth < 560 ? 2 : 3;
@@ -267,14 +275,7 @@
     });
     events.forEach(function (x) { eachDay(x.date, x.endDate || x.date, function (k) { add(k, { kind: 'event', x: x }); }); });
 
-    Object.keys(items).forEach(function (k) {
-      var mm = Number(k.slice(0, 4)) * 12 + Number(k.slice(5, 7)) - 1;
-      if (mm > maxMonth) maxMonth = mm;
-    });
-    if (uwin) {
-      var r = Number(uwin.rangeTo.slice(0, 4)) * 12 + Number(uwin.rangeTo.slice(5, 7)) - 1;
-      if (r > maxMonth) maxMonth = r;
-    }
+    rangeTo = uwin ? uwin.rangeTo : null;
     render();
   });
   render();
