@@ -133,6 +133,40 @@
   .tag { display:inline-block; font-size:11.5px; padding:1px 8px; border-radius:999px; margin-right:8px; font-weight:700; vertical-align:1px; }
   .tag.trip, .tag.leave { background:var(--t); color:var(--ink); box-shadow:inset 0 0 0 1px var(--c); }
 
+  /* 일정 추가 버튼·모달 */
+  .addbtn { border:0; background:#0e7c66; color:#fff; font-weight:700; font-size:13.5px; height:38px; padding:0 16px; border-radius:12px; cursor:pointer; box-shadow:0 2px 8px rgba(14,124,102,.35); }
+  .addbtn:hover { filter:brightness(1.08); }
+  .addbtn[hidden] { display:none; }
+  footer a { color:inherit; text-decoration:underline; cursor:pointer; }
+  .modal { position:fixed; inset:0; background:rgba(5,8,14,.72); display:flex; align-items:center; justify-content:center; padding:16px; z-index:30; }
+  .modal[hidden] { display:none; }
+  .sheet { background:var(--card); width:min(520px,100%); max-height:92vh; overflow-y:auto; border-radius:20px; padding:22px; box-shadow:0 24px 64px rgba(0,0,0,.45); }
+  .mhead { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
+  .mhead h3 { margin:0; font-size:19px; font-weight:800; letter-spacing:-0.02em; }
+  .mhead .x { border:0; background:var(--soft); width:34px; height:34px; border-radius:50%; font-size:20px; line-height:1; cursor:pointer; }
+  .field { margin-bottom:14px; }
+  .field label, .field .lab { display:block; font-size:12.5px; font-weight:700; color:var(--muted); margin-bottom:6px; }
+  .field input, .field textarea { width:100%; font:inherit; color:var(--ink); background:var(--soft); border:1px solid var(--line); border-radius:11px; padding:10px 12px; }
+  .field textarea { resize:vertical; min-height:92px; }
+  .field input:focus, .field textarea:focus { outline:2px solid #0e7c66; outline-offset:0; background:var(--card); }
+  .row2 { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .seg { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; }
+  .segbtn { border:1px solid var(--line); background:var(--soft); border-radius:11px; padding:9px 0; font-weight:600; font-size:14px; cursor:pointer; }
+  .segbtn.on { background:var(--t); box-shadow:inset 0 0 0 1.5px var(--c); }
+  .err { color:var(--warn); font-size:13px; min-height:18px; margin:0 0 8px; }
+  .mfoot { display:flex; justify-content:flex-end; gap:10px; margin-top:4px; }
+  .btn { border:1px solid var(--line); background:var(--soft); color:var(--ink); font-weight:700; font-size:14.5px; height:42px; padding:0 20px; border-radius:12px; cursor:pointer; }
+  .btn.primary { background:#0e7c66; border-color:#0e7c66; color:#fff; min-width:92px; }
+  .btn.primary:hover:not(:disabled) { filter:brightness(1.08); }
+  .btn:disabled { opacity:.6; cursor:default; }
+  .help { font-size:13px; color:var(--muted); line-height:1.6; margin:0 0 14px; }
+  .help a { color:var(--brand); }
+  .toast { position:fixed; left:50%; bottom:28px; transform:translateX(-50%); background:#1b2230; color:#fff; padding:11px 18px; border-radius:12px; font-size:14px; z-index:40; box-shadow:0 8px 24px rgba(0,0,0,.35); max-width:calc(100vw - 32px); }
+  .toast[hidden] { display:none; }
+  .delbtn { margin-top:8px; border:1px solid var(--line); background:var(--card); color:var(--warn); font-size:12.5px; font-weight:600; padding:4px 12px; border-radius:8px; cursor:pointer; }
+  .addhere { width:100%; margin-top:18px; }
+  @media (prefers-color-scheme: dark) { .btn.primary, .addbtn { background:#1f9d82; border-color:#1f9d82; } .field input:focus, .field textarea:focus { outline-color:#3fc4a5; } }
+
   @media (max-width:900px) {
     main { padding:22px 14px 40px; }
     .week { min-height:104px; }
@@ -165,6 +199,7 @@
     <div class="bar-head">
       <h2 id="title"></h2>
       <div class="legend"><span><i class="l-trip"></i>출장</span><span><i class="l-leave"></i>휴가·기타</span><span><i class="l-event"></i>행사</span></div>
+      <button id="addBtn" class="addbtn" type="button" hidden>＋ 일정 추가</button>
       <div class="nav">
         <button id="prev" aria-label="이전 달">‹</button>
         <button id="todayBtn" class="todaybtn">오늘</button>
@@ -176,7 +211,7 @@
     <div id="agenda"></div>
     <div id="rangeNote" class="note" style="display:none"></div>
   </section>
-  <footer>출장·휴가는 UWIN 부재 정보(이름·구분·날짜·시간, 일부 출장은 출장목적), 행사는 주간보고 기준입니다. 날짜를 누르면 세부 내용이 열립니다. 검색엔진에 노출되지 않도록 설정돼 있습니다.</footer>
+  <footer>출장·휴가는 UWIN 부재 정보(이름·구분·날짜·시간, 일부 출장은 출장목적), 행사는 주간보고 기준입니다. 날짜를 누르면 세부 내용이 열립니다. 검색엔진에 노출되지 않도록 설정돼 있습니다. · <a id="editLink" role="button" tabindex="0">편집 설정</a></footer>
 </main>
 
 <div class="scrim" id="scrim"></div>
@@ -188,6 +223,47 @@
   </header>
   <div class="body" id="dBody"></div>
 </aside>
+
+<div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="mTitle" hidden>
+  <form class="sheet" id="addForm" novalidate>
+    <div class="mhead"><h3 id="mTitle">일정 추가</h3><button type="button" class="x" id="mClose" aria-label="닫기">×</button></div>
+    <div class="field"><span class="lab" id="typeLab">유형</span>
+      <div class="seg" id="typeSeg" role="radiogroup" aria-labelledby="typeLab">
+        <button type="button" class="segbtn event on" data-type="행사" role="radio" aria-checked="true">행사</button>
+        <button type="button" class="segbtn trip" data-type="출장" role="radio" aria-checked="false">출장</button>
+        <button type="button" class="segbtn leave" data-type="휴가" role="radio" aria-checked="false">휴가</button>
+        <button type="button" class="segbtn event" data-type="기타" role="radio" aria-checked="false">기타</button>
+      </div>
+    </div>
+    <div class="field" id="nameField" hidden><label for="fName">이름</label><input id="fName" maxlength="20" autocomplete="off"></div>
+    <div class="field"><label for="fTitle" id="titleLab">제목</label><input id="fTitle" maxlength="80" autocomplete="off"></div>
+    <div class="row2">
+      <div class="field"><label for="fStart">시작일</label><input type="date" id="fStart"></div>
+      <div class="field"><label for="fEnd">종료일 (선택)</label><input type="date" id="fEnd"></div>
+    </div>
+    <div class="row2">
+      <div class="field"><label for="fFrom">시작 시간 (선택)</label><input type="time" id="fFrom"></div>
+      <div class="field"><label for="fTo">종료 시간 (선택)</label><input type="time" id="fTo"></div>
+    </div>
+    <div class="field"><label for="fDesc">세부내용</label><textarea id="fDesc" maxlength="500"></textarea></div>
+    <p class="err" id="mErr" role="alert"></p>
+    <div class="mfoot"><button type="button" class="btn" id="mCancel">취소</button><button type="submit" class="btn primary" id="mSubmit">입력</button></div>
+  </form>
+</div>
+
+<div class="modal" id="setup" role="dialog" aria-modal="true" aria-labelledby="sTitle" hidden>
+  <form class="sheet" id="setupForm" novalidate>
+    <div class="mhead"><h3 id="sTitle">편집 설정</h3><button type="button" class="x" id="sClose" aria-label="닫기">×</button></div>
+    <p class="help">일정을 직접 추가하려면 GitHub 토큰이 한 번 필요합니다. 이 브라우저에만 저장되고 다른 사람에게는 보이지 않습니다.<br>
+      1) <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">토큰 만들기</a>에서 <b>Repository access → Only select repositories → schedule</b>,<br>
+      2) <b>Permissions → Contents: Read and write</b>를 고르고 만들기,<br>
+      3) 나온 토큰(github_pat_…)을 아래에 붙여넣습니다.</p>
+    <div class="field"><label for="fToken">GitHub 토큰</label><input id="fToken" type="password" autocomplete="off" spellcheck="false"></div>
+    <p class="err" id="sErr" role="alert"></p>
+    <div class="mfoot"><button type="button" class="btn" id="sCancel">취소</button><button type="submit" class="btn primary" id="sSubmit">저장</button></div>
+  </form>
+</div>
+<div class="toast" id="toast" role="status" hidden></div>
 
 <script>
 (function () {
@@ -339,6 +415,7 @@
           if (x.place) lines.push('장소: ' + x.place);
           if (x.desc) lines.push('내용: ' + x.desc);
           if (lines.length) row.appendChild(el('div', 's', lines.join('\n')));
+          if (x.id) addDelete(row, x.id);
         } else {
           var e = it.e;
           t.appendChild(el('span', 'tag ' + it.kind, e.type));
@@ -350,11 +427,21 @@
           if (sub.length) row.appendChild(el('div', 's', sub.join(' · ')));
           if (e.purpose) row.appendChild(el('div', 's', '출장목적: ' + e.purpose));
           if (it.linked && it.linked.length) row.appendChild(el('div', 's', '행사: ' + it.linked.map(function (z) { return z.title; }).join(', ')));
+          if (it.custom) {
+            if (it.custom.title) row.appendChild(el('div', 's', '제목: ' + it.custom.title));
+            if (it.custom.desc) row.appendChild(el('div', 's', '세부내용: ' + it.custom.desc));
+            addDelete(row, it.custom.id);
+          }
         }
         sec.appendChild(row);
       });
       body.appendChild(sec);
     });
+    if (editOn()) {
+      var ah = el('button', 'btn addhere', '＋ 이 날짜에 일정 추가'); ah.type = 'button';
+      ah.addEventListener('click', openAdd);
+      body.appendChild(ah);
+    }
     $('drawer').classList.add('open'); $('drawer').setAttribute('aria-hidden', 'false');
     $('scrim').classList.add('open');
     render();
@@ -371,7 +458,11 @@
   }
   $('scrim').addEventListener('click', closeDrawer);       // 바깥 클릭
   $('dClose').addEventListener('click', closeDrawer);
-  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeDrawer(); });
+  document.addEventListener('keydown', function (e) {
+    if (e.key !== 'Escape') return;
+    var m = anyModal();
+    if (m) closeModal(m); else closeDrawer();      // 모달이 열려 있으면 모달만 닫는다
+  });
   function onPick(e) { var c = e.target.closest('[data-date]'); if (c && !c.classList.contains('blank')) openDrawer(c.getAttribute('data-date')); }
   $('weeks').addEventListener('click', onPick);
   $('agenda').addEventListener('click', onPick);
@@ -389,12 +480,196 @@
   }
   function banner(text) { $('banners').appendChild(el('div', 'banner', text)); }
 
+  // ── 직접 추가한 일정 (custom.json) ──
+  var REPO = 'rmsk1105/schedule', CUSTOM_PATH = 'docs/data/custom.json';
+  var uwinEvents = [], evList = [], customList = [];
+  var editToken = '';
+  try { editToken = localStorage.getItem('schedule_pat') || ''; } catch (e) {}
+  function editOn() { return !!editToken; }
+  function applyEditUi() { $('addBtn').hidden = !editOn(); $('editLink').textContent = editOn() ? '편집 해제' : '편집 설정'; }
+
+  function b64enc(s) { return btoa(unescape(encodeURIComponent(s))); }
+  function b64dec(s) { return decodeURIComponent(escape(atob(s.replace(/\s/g, '')))); }
+  function gh(path, opts) {
+    opts = opts || {};
+    opts.headers = { 'Authorization': 'Bearer ' + editToken, 'Accept': 'application/vnd.github+json' };
+    return fetch('https://api.github.com/repos/' + REPO + path, opts);
+  }
+  function ghError(r) {
+    if (r.status === 401 || r.status === 403 || r.status === 404) return '권한 문제입니다. 토큰이 올바른지, schedule 저장소의 Contents 쓰기 권한이 있는지 확인해 주세요. (편집 해제 후 다시 설정)';
+    return 'GitHub 저장에 실패했습니다 (' + r.status + '). 잠시 후 다시 시도해 주세요.';
+  }
+  function loadRemote() {
+    return gh('/contents/' + CUSTOM_PATH + '?ref=main&t=' + Date.now()).then(function (r) {
+      if (!r.ok) throw new Error(ghError(r));
+      return r.json();
+    }).then(function (j) { return { sha: j.sha, data: JSON.parse(b64dec(j.content)) }; });
+  }
+  function saveRemote(mutate, message, attempt) {
+    attempt = attempt || 0;
+    return loadRemote().then(function (cur) {
+      var data = cur.data; if (!data.items) data.items = [];
+      mutate(data);
+      return gh('/contents/' + CUSTOM_PATH, {
+        method: 'PUT',
+        body: JSON.stringify({ message: message, content: b64enc(JSON.stringify(data, null, 2) + '\n'), sha: cur.sha, branch: 'main' })
+      }).then(function (r) {
+        if (r.ok) return data;
+        if ((r.status === 409 || r.status === 422) && attempt < 2) return saveRemote(mutate, message, attempt + 1);
+        throw new Error(ghError(r));
+      });
+    });
+  }
+  function loadCustom() {
+    var pages = function () { return get('data/custom.json').then(function (d) { return d.items || []; }).catch(function () { return []; }); };
+    if (!editOn()) return pages();
+    return loadRemote().then(function (c) { return c.data.items || []; }).catch(pages);   // 직접 쓴 직후엔 Pages보다 GitHub가 더 최신
+  }
+
+  function isEventType(c) { return c.type === '행사' || c.type === '기타'; }
+  function rebuild() {
+    items = {}; spans = [];
+    var events = evList.concat(customList.filter(isEventType).map(function (c) {
+      return { id: c.id, title: c.title, date: c.start, endDate: c.end && c.end !== c.start ? c.end : undefined, time: c.from ? c.from + (c.to ? '~' + c.to : '') : '', desc: c.desc || '' };
+    }));
+    var people = uwinEvents.concat(customList.filter(function (c) { return !isEventType(c); }).map(function (c) {
+      return { name: c.name, type: c.type, start: c.start, end: c.end || c.start, from: c.from || null, to: c.to || null, _c: c };
+    }));
+    people.forEach(function (e) {
+      var kind = e.type === '출장' ? 'trip' : 'leave';
+      var linked = events.filter(function (x) {
+        return e.type === '출장' && (x.who || []).indexOf(e.name) >= 0 && x.date <= e.end && (x.endDate || x.date) >= e.start;
+      });
+      var label = '(' + e.type + ') ' + e.name + (e._c && e._c.title ? ' · ' + e._c.title : '');
+      var sp = { kind: kind, start: e.start, end: e.end, label: label, time: e.from ? e.from + '~' + e.to : '', range: e.start !== e.end ? md(e.start) + '~' + md(e.end) : '' };
+      spans.push(sp);
+      eachDay(e.start, e.end, function (k) { add(k, { kind: kind, e: e, linked: linked, sp: sp, custom: e._c }); });
+    });
+    events.forEach(function (x) {
+      var end = x.endDate || x.date;
+      var sp = { kind: 'event', start: x.date, end: end, label: x.title, time: '', range: end !== x.date ? md(x.date) + '~' + md(end) : '' };
+      spans.push(sp);
+      eachDay(x.date, end, function (k) { add(k, { kind: 'event', x: x, sp: sp }); });
+    });
+  }
+
+  // 토스트
+  var toastT;
+  function toast(msg) { var t = $('toast'); t.textContent = msg; t.hidden = false; clearTimeout(toastT); toastT = setTimeout(function () { t.hidden = true; }, 4500); }
+
+  // 모달 공통
+  var modalOpener = null;
+  function openModal(id) { modalOpener = document.activeElement; $(id).hidden = false; }
+  function closeModal(id) { $(id).hidden = true; if (modalOpener && modalOpener.focus) modalOpener.focus(); }
+  function anyModal() { return !$('modal').hidden ? 'modal' : (!$('setup').hidden ? 'setup' : null); }
+  function trapTab(e) {
+    var id = anyModal(); if (!id || e.key !== 'Tab') return;
+    var f = [].slice.call($(id).querySelectorAll('input,textarea,button,a[href]')).filter(function (n) { return !n.disabled && n.offsetParent !== null; });
+    if (!f.length) return;
+    var first = f[0], last = f[f.length - 1];
+    if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+  }
+  document.addEventListener('keydown', trapTab);
+
+  // 일정 추가 모달
+  var curType = '행사';
+  function setType(t) {
+    curType = t;
+    [].forEach.call($('typeSeg').children, function (b) {
+      var on = b.getAttribute('data-type') === t;
+      b.classList.toggle('on', on); b.setAttribute('aria-checked', on ? 'true' : 'false');
+    });
+    var person = t === '출장' || t === '휴가';
+    $('nameField').hidden = !person;
+    $('titleLab').textContent = person ? '제목 (선택)' : '제목';
+  }
+  function openAdd() {
+    $('addForm').reset(); $('mErr').textContent = '';
+    setType('행사');
+    $('fStart').value = selected || todayIso;
+    $('mSubmit').disabled = false; $('mSubmit').textContent = '입력';
+    openModal('modal');
+    $('fTitle').focus();
+  }
+  $('addBtn').addEventListener('click', openAdd);
+  $('addForm').addEventListener('input', function () { $('mErr').textContent = ''; });
+  $('setupForm').addEventListener('input', function () { $('sErr').textContent = ''; });
+  $('typeSeg').addEventListener('click', function (e) { var b = e.target.closest('.segbtn'); if (b) setType(b.getAttribute('data-type')); });
+  $('mClose').addEventListener('click', function () { closeModal('modal'); });
+  $('mCancel').addEventListener('click', function () { closeModal('modal'); });
+  $('addForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var person = curType === '출장' || curType === '휴가';
+    var name = $('fName').value.trim(), title = $('fTitle').value.trim(), desc = $('fDesc').value.trim();
+    var start = $('fStart').value, end = $('fEnd').value, from = $('fFrom').value, to = $('fTo').value;
+    var err = '';
+    if (person && !name) err = '이름을 입력해 주세요.';
+    else if (!person && !title) err = '제목을 입력해 주세요.';
+    else if (!start) err = '시작일을 선택해 주세요.';
+    else if (end && end < start) err = '종료일이 시작일보다 빠릅니다.';
+    else if ((from && !to) || (!from && to)) err = '시작 시간과 종료 시간을 함께 입력하거나 둘 다 비워 주세요.';
+    else if (from && to && from >= to && (!end || end === start)) err = '종료 시간이 시작 시간보다 빨라야 합니다.';
+    if (err) { $('mErr').textContent = err; return; }
+    var item = { id: 'c' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), type: curType, name: person ? name : '', title: title, desc: desc, start: start, end: end || start, from: from || '', to: to || '', createdAt: new Date().toISOString() };
+    $('mErr').textContent = ''; $('mSubmit').disabled = true; $('mSubmit').textContent = '저장 중…';
+    saveRemote(function (d) { d.items.push(item); }, '일정 추가: ' + (title || name)).then(function (d) {
+      customList = d.items; rebuild(); render(); closeModal('modal');
+      if (selected) openDrawer(selected);
+      toast('저장했습니다. 다른 사람 화면에는 1~2분 뒤 반영됩니다.');
+    }).catch(function (ex) {
+      $('mErr').textContent = ex.message; $('mSubmit').disabled = false; $('mSubmit').textContent = '입력';
+    });
+  });
+
+  function addDelete(row, id) {
+    if (!editOn() || !id) return;
+    var b = el('button', 'delbtn', '삭제'); b.type = 'button';
+    b.addEventListener('click', function () {
+      if (!window.confirm('이 일정을 삭제할까요?')) return;
+      b.disabled = true;
+      saveRemote(function (d) { d.items = d.items.filter(function (c) { return c.id !== id; }); }, '일정 삭제').then(function (d) {
+        customList = d.items; rebuild(); render(); if (selected) openDrawer(selected); toast('삭제했습니다.');
+      }).catch(function (ex) { b.disabled = false; toast(ex.message); });
+    });
+    row.appendChild(b);
+  }
+
+  // 편집 설정(토큰)
+  function openSetup() { $('fToken').value = ''; $('sErr').textContent = ''; $('sSubmit').disabled = false; $('sSubmit').textContent = '저장'; openModal('setup'); $('fToken').focus(); }
+  $('editLink').addEventListener('click', function () {
+    if (editOn()) {
+      if (!window.confirm('이 브라우저에서 편집 기능을 해제할까요? (저장된 토큰이 지워집니다)')) return;
+      try { localStorage.removeItem('schedule_pat'); } catch (e) {}
+      editToken = ''; applyEditUi(); loadCustom().then(function (l) { customList = l; rebuild(); render(); }); toast('편집 기능을 해제했습니다.');
+    } else openSetup();
+  });
+  $('editLink').addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); $('editLink').click(); } });
+  $('sClose').addEventListener('click', function () { closeModal('setup'); });
+  $('sCancel').addEventListener('click', function () { closeModal('setup'); });
+  $('setupForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var t = $('fToken').value.trim();
+    if (!t) { $('sErr').textContent = '토큰을 붙여넣어 주세요.'; return; }
+    $('sSubmit').disabled = true; $('sSubmit').textContent = '확인 중…';
+    var prev = editToken; editToken = t;
+    loadRemote().then(function (c) {
+      try { localStorage.setItem('schedule_pat', t); } catch (ex) {}
+      customList = c.data.items || []; applyEditUi(); rebuild(); render(); closeModal('setup');
+      toast('편집 기능이 켜졌습니다. ‘＋ 일정 추가’ 버튼이 보입니다.');
+    }).catch(function (ex) {
+      editToken = prev; $('sErr').textContent = ex.message; $('sSubmit').disabled = false; $('sSubmit').textContent = '저장';
+    });
+  });
+  applyEditUi();
+
   Promise.all([
     get('data/uwin.json').catch(function () { return null; }),
     get('data/events.json').catch(function () { return { updatedAt: null, events: [] }; }),
-    get('data/status.json').catch(function () { return null; })
+    get('data/status.json').catch(function () { return null; }),
+    loadCustom()
   ]).then(function (res) {
-    var uwin = res[0], ev = res[1], status = res[2];
+    var uwin = res[0], ev = res[1], status = res[2]; customList = res[3];
     if (!uwin) {
       pill([{ t: '출장·휴가 갱신 ' }, { b: '정보 없음' }], 'stale');
       banner('⚠ 갱신 지연 — 일정 데이터를 불러오지 못했습니다. 표시된 정보가 없거나 오래됐을 수 있습니다.');
@@ -406,23 +681,10 @@
     }
     pill([{ t: '주간보고 반영 ' }, { b: ev.updatedAt || '아직 없음' }]);
 
-    var events = ev.events || [];
-    ((uwin && uwin.events) || []).forEach(function (e) {
-      var kind = e.type === '출장' ? 'trip' : 'leave';
-      var linked = events.filter(function (x) {
-        return e.type === '출장' && (x.who || []).indexOf(e.name) >= 0 && x.date <= e.end && (x.endDate || x.date) >= e.start;
-      });
-      var sp = { kind: kind, start: e.start, end: e.end, label: '(' + e.type + ') ' + e.name, time: e.from ? e.from + '~' + e.to : '', range: e.start !== e.end ? md(e.start) + '~' + md(e.end) : '' };
-      spans.push(sp);
-      eachDay(e.start, e.end, function (k) { add(k, { kind: kind, e: e, linked: linked, sp: sp }); });
-    });
-    events.forEach(function (x) {
-      var end = x.endDate || x.date;
-      var sp = { kind: 'event', start: x.date, end: end, label: x.title, time: '', range: end !== x.date ? md(x.date) + '~' + md(end) : '' };
-      spans.push(sp);
-      eachDay(x.date, end, function (k) { add(k, { kind: 'event', x: x, sp: sp }); });
-    });
+    uwinEvents = (uwin && uwin.events) || [];
+    evList = ev.events || [];
     rangeTo = uwin ? uwin.rangeTo : null;
+    rebuild();
     render();
   });
   render();
