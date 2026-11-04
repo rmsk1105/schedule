@@ -416,6 +416,7 @@
           if (x.desc) lines.push('내용: ' + x.desc);
           if (lines.length) row.appendChild(el('div', 's', lines.join('\n')));
           if (x.id) addDelete(row, x.id);
+          addNotes(row, x._notes);
         } else {
           var e = it.e;
           t.appendChild(el('span', 'tag ' + it.kind, e.type));
@@ -432,6 +433,7 @@
             if (it.custom.desc) row.appendChild(el('div', 's', '세부내용: ' + it.custom.desc));
             addDelete(row, it.custom.id);
           }
+          addNotes(row, e._notes);
         }
         sec.appendChild(row);
       });
@@ -527,12 +529,28 @@
   }
 
   function isEventType(c) { return c.type === '행사' || c.type === '기타'; }
+  function norm(s) { return String(s || '').replace(/[\s()\[\]·,._~\-]/g, '').toLowerCase(); }
+  function sameTitle(a, b) { a = norm(a); b = norm(b); return !!a && !!b && (a.indexOf(b) >= 0 || b.indexOf(a) >= 0); }
   function rebuild() {
     items = {}; spans = [];
-    var events = evList.concat(customList.filter(isEventType).map(function (c) {
+    // 직접 추가한 일정이 UWIN·주보와 같은 일정이면 자동 데이터가 이긴다 (중복 표시 방지). 직접 쓴 내용은 '메모'로 붙인다.
+    uwinEvents.forEach(function (e) { e._notes = []; });
+    evList.forEach(function (x) { x._notes = []; });
+    var ownEvents = [], ownPeople = [];
+    customList.forEach(function (c) {
+      var end = c.end || c.start, hit = null;
+      if (isEventType(c)) {
+        evList.some(function (x) { if (c.start <= (x.endDate || x.date) && x.date <= end && sameTitle(c.title, x.title)) { hit = x; return true; } return false; });
+        if (hit) hit._notes.push(c); else ownEvents.push(c);
+      } else {
+        uwinEvents.some(function (e) { if (e.name === c.name && (e.type === '출장') === (c.type === '출장') && c.start <= e.end && e.start <= end) { hit = e; return true; } return false; });
+        if (hit) hit._notes.push(c); else ownPeople.push(c);
+      }
+    });
+    var events = evList.concat(ownEvents.map(function (c) {
       return { id: c.id, title: c.title, date: c.start, endDate: c.end && c.end !== c.start ? c.end : undefined, time: c.from ? c.from + (c.to ? '~' + c.to : '') : '', desc: c.desc || '' };
     }));
-    var people = uwinEvents.concat(customList.filter(function (c) { return !isEventType(c); }).map(function (c) {
+    var people = uwinEvents.concat(ownPeople.map(function (c) {
       return { name: c.name, type: c.type, start: c.start, end: c.end || c.start, from: c.from || null, to: c.to || null, _c: c };
     }));
     people.forEach(function (e) {
@@ -633,6 +651,15 @@
       }).catch(function (ex) { b.disabled = false; toast(ex.message); });
     });
     row.appendChild(b);
+  }
+
+  // 자동 일정(UWIN·주보)과 겹쳐서 합쳐진, 직접 쓴 내용을 메모로 보여준다
+  function addNotes(row, notes) {
+    (notes || []).forEach(function (c) {
+      var txt = [c.title, c.desc].filter(Boolean).join(' — ');
+      row.appendChild(el('div', 's', '메모: ' + (txt || '(내용 없음 · 같은 일정으로 합쳐짐)')));
+      addDelete(row, c.id);
+    });
   }
 
   // 편집 설정(토큰)
