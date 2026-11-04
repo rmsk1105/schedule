@@ -18,7 +18,7 @@
   } }
   * { box-sizing: border-box; }
   body { margin:0; background:var(--bg); color:var(--text); font:16px/1.5 -apple-system,"Malgun Gothic","Apple SD Gothic Neo",sans-serif; }
-  main { max-width: 980px; margin: 0 auto; padding: 20px 16px 40px; }
+  main { max-width: 1240px; margin: 0 auto; padding: 20px 16px 40px; }
   h1 { font-size: 22px; margin: 0 0 4px; }
   .meta { color: var(--muted); font-size: 13px; }
   .meta span { display:block; }
@@ -35,7 +35,7 @@
   .dow div { text-align:center; font-size:12px; padding:6px 0; color:var(--muted); border-bottom:1px solid var(--line); }
   .dow div:first-child, .cell.sun .num { color:var(--sun); }
   .dow div:last-child, .cell.sat .num { color:var(--sat); }
-  .cell { appearance:none; font:inherit; color:inherit; text-align:left; background:var(--card); border:0; border-right:1px solid var(--line); border-bottom:1px solid var(--line); min-height:92px; padding:4px; cursor:pointer; display:flex; flex-direction:column; gap:2px; min-width:0; }
+  .cell { appearance:none; font:inherit; color:inherit; text-align:left; background:var(--card); border:0; border-right:1px solid var(--line); border-bottom:1px solid var(--line); min-height:128px; padding:5px; cursor:pointer; display:flex; flex-direction:column; gap:2px; min-width:0; }
   .cell:nth-child(7n) { border-right:0; }
   .cell:hover { background: var(--leave-bg); }
   .cell:focus-visible { outline:2px solid var(--accent); outline-offset:-2px; }
@@ -45,7 +45,7 @@
   .cell.selected { box-shadow: inset 0 0 0 2px var(--accent); }
   .num { font-size:13px; font-weight:600; padding:0 2px; }
   .cell.today .num { color:var(--accent); }
-  .chip { display:block; font-size:11px; line-height:1.35; padding:1px 5px; border-radius:4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .chip { display:block; font-size:12px; line-height:1.35; padding:2px 6px; border-radius:4px; white-space:normal; word-break:keep-all; overflow-wrap:anywhere; }
   .chip.trip { background:var(--accent-bg); color:var(--accent); font-weight:600; }
   .chip.leave { background:var(--leave-bg); color:var(--muted); }
   .chip.event { background:var(--event-bg); color:var(--event); font-weight:600; }
@@ -56,7 +56,7 @@
   /* 드로어 */
   .scrim { position:fixed; inset:0; background:var(--scrim); opacity:0; visibility:hidden; transition:opacity .2s, visibility .2s; z-index:10; }
   .scrim.open { opacity:1; visibility:visible; }
-  .drawer { position:fixed; top:0; right:0; bottom:0; width:360px; max-width:100vw; background:var(--card); border-left:1px solid var(--line); box-shadow:-8px 0 24px rgba(0,0,0,.18); transform:translateX(100%); visibility:hidden; transition:transform .22s ease, visibility .22s; z-index:11; display:flex; flex-direction:column; }
+  .drawer { position:fixed; top:0; right:0; bottom:0; width:500px; max-width:100vw; background:var(--card); border-left:1px solid var(--line); box-shadow:-8px 0 24px rgba(0,0,0,.18); transform:translateX(100%); visibility:hidden; transition:transform .22s ease, visibility .22s; z-index:11; display:flex; flex-direction:column; }
   .drawer.open { transform:translateX(0); visibility:visible; }
   .drawer header { display:flex; align-items:center; padding:16px; border-bottom:1px solid var(--line); }
   .drawer header h3 { margin:0; flex:1; font-size:17px; }
@@ -78,8 +78,8 @@
 
   @media (max-width: 560px) {
     main { padding: 16px 8px 32px; }
-    .cell { min-height:68px; padding:3px 2px; }
-    .chip { font-size:10px; padding:0 3px; }
+    .cell { min-height:84px; padding:3px 2px; }
+    .chip { font-size:10px; padding:1px 3px; }
   }
   @media (prefers-reduced-motion: reduce) { .drawer, .scrim { transition:none; } }
 </style>
@@ -157,7 +157,6 @@
     } else { note.style.display = 'none'; }
     var grid = $('grid'); grid.textContent = '';
     var first = new Date(y, m, 1).getDay(), days = new Date(y, m + 1, 0).getDate();
-    var maxChips = window.innerWidth < 560 ? 2 : 3;
     var total = Math.ceil((first + days) / 7) * 7;
     for (var i = 0; i < total; i++) {
       var dayNum = i - first + 1;
@@ -168,13 +167,10 @@
       c.setAttribute('data-date', k);
       c.setAttribute('aria-label', (m + 1) + '월 ' + dayNum + '일, 일정 ' + list.length + '건');
       c.appendChild(el('span', 'num', String(dayNum)));
-      list.slice(0, maxChips).forEach(function (it) {
-        var label = it.kind === 'event' ? it.x.title : it.e.name;
-        var chip = el('span', 'chip ' + it.kind, label);
-        chip.title = it.kind === 'event' ? it.x.title : it.e.name + ' ' + it.e.type;
-        c.appendChild(chip);
+      list.forEach(function (it) {
+        var label = it.kind === 'event' ? it.x.title : '(' + it.e.type + ') ' + it.e.name;
+        c.appendChild(el('span', 'chip ' + it.kind, label));
       });
-      if (list.length > maxChips) c.appendChild(el('span', 'more', '+' + (list.length - maxChips)));
       grid.appendChild(c);
     }
   }
