@@ -1,0 +1,37 @@
+# PC 밖 감시: 갱신 시각 파일이 26시간 넘게 그대로면 일부러 실패 → GitHub이 실패 메일을 보낸다.
+# (PC가 꺼졌거나 스케줄러가 멈춘 경우를 잡는다. 지연이 이어지면 매일 메일이 와서 리마인더가 된다.)
+name: watchdog
+on:
+  schedule:
+    - cron: '0 1 * * *'   # 매일 01:00 UTC = 10:00 KST
+  workflow_dispatch: {}
+permissions:
+  contents: read
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: 갱신 시각 점검
+        run: |
+          set -e
+          LIMIT_HOURS=26
+          if [ ! -f docs/data/uwin.json ]; then echo "::error::docs/data/uwin.json 이 없습니다"; exit 1; fi
+          GEN=$(python3 -c "import json;print(json.load(open('docs/data/uwin.json'))['generatedAt'])")
+          AGE=$(python3 - "$GEN" <<'PY'
+          import sys, datetime
+          g = datetime.datetime.fromisoformat(sys.argv[1].replace('Z', '+00:00'))
+          print(int((datetime.datetime.now(datetime.timezone.utc) - g).total_seconds() // 3600))
+          PY
+          )
+          CODE=$(python3 -c "import json,os;p='docs/data/status.json';print(json.load(open(p)).get('code') or 'none' if os.path.exists(p) else 'unknown')")
+          echo "마지막 갱신: $GEN (${AGE}시간 전), 마지막 시도 코드: $CODE"
+          if [ "$AGE" -gt "$LIMIT_HOURS" ]; then
+            if [ "$CODE" = "session_expired" ]; then
+              echo "::error::일정판 갱신 지연(${AGE}시간) — UWIN 세션 만료로 보입니다. UWIN-MCP 폴더에서 npm run login 으로 다시 로그인하세요."
+            else
+              echo "::error::일정판 갱신 지연(${AGE}시간) — PC가 꺼져 있거나 작업 스케줄러가 멈췄을 수 있습니다. (마지막 시도 코드: $CODE)"
+            fi
+            exit 1
+          fi
+          echo "정상"

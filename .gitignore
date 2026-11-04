@@ -4,3 +4,6 @@ node_modules/
 .env
 collect/
 package.json
+주보/
+*.hwp
+*.hwpx
