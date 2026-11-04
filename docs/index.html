@@ -15,6 +15,8 @@
     --event:#ecebfe; --event-ink:#3a34c4; --event-line:#5b54f0;
     --warn-bg:#fdecea; --warn:#b3261e; --sun:#d64545; --sat:#3c6be0;
     --scrim:rgba(14,18,28,.45); --shadow:0 1px 2px rgba(20,25,37,.05), 0 8px 24px rgba(20,25,37,.06);
+    --c-trip:#1fa37f; --c-leave:#f0a020; --c-event:#5b54f0;
+    --t-trip:rgba(31,163,127,.13); --t-leave:rgba(240,160,32,.16); --t-event:rgba(91,84,240,.11);
   }
   @media (prefers-color-scheme: dark) { :root {
     --bg:#0f131b; --card:#181e29; --ink:#eef1f7; --muted:#97a1b5; --line:#2a3242; --soft:#1e2532;
@@ -24,6 +26,8 @@
     --event:#262a4c; --event-ink:#bdb9ff; --event-line:#8580f7;
     --warn-bg:#3a1f1d; --warn:#ff8a80; --sun:#ff8a80; --sat:#8fb0ff;
     --scrim:rgba(0,0,0,.6); --shadow:0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.25);
+    --c-trip:#3fc4a5; --c-leave:#f5b84a; --c-event:#8580f7;
+    --t-trip:rgba(63,196,165,.2); --t-leave:rgba(245,184,74,.2); --t-event:rgba(133,128,247,.22);
   } }
   * { box-sizing:border-box; }
   html, body { overflow-x:hidden; }
@@ -54,10 +58,10 @@
   .nav .todaybtn { font-weight:600; font-size:13px; }
   .legend { display:flex; gap:14px; font-size:12.5px; color:var(--muted); }
   .legend span { display:inline-flex; align-items:center; gap:6px; }
-  .legend i { width:12px; height:12px; border-radius:4px; display:inline-block; }
-  .legend .l-trip { background:var(--trip); }
-  .legend .l-leave { background:var(--leave); box-shadow:inset 0 0 0 1px var(--leave-line); }
-  .legend .l-event { background:var(--event); box-shadow:inset 3px 0 0 var(--event-line); }
+  .legend i { width:4px; height:14px; border-radius:2px; display:inline-block; }
+  .legend .l-trip { background:var(--c-trip); }
+  .legend .l-leave { background:var(--c-leave); }
+  .legend .l-event { background:var(--c-event); }
 
   .dow { display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); border-bottom:1px solid var(--line); }
   .dow div { text-align:center; font-size:12px; font-weight:600; color:var(--muted); padding:8px 0; }
@@ -78,13 +82,17 @@
   .num.sun { color:var(--sun); } .num.sat { color:var(--sat); }
   .num.past { opacity:.45; }
   .num.today span { background:var(--brand); color:#fff; }
-  .bar { position:relative; pointer-events:none; margin:0 4px; padding:3px 8px; border-radius:7px; font-size:12.5px; line-height:1.35; font-weight:600; word-break:keep-all; overflow-wrap:anywhere; }
-  .bar.cl { margin-left:0; border-top-left-radius:0; border-bottom-left-radius:0; padding-left:10px; }
+  /* 갤럭시 캘린더 스타일: 왼쪽 색 선 + 일반 글씨. 여러 날 이어지는 일정만 옅은 배경으로 연결 */
+  .trip { --c:var(--c-trip); --t:var(--t-trip); }
+  .leave { --c:var(--c-leave); --t:var(--t-leave); }
+  .event { --c:var(--c-event); --t:var(--t-event); }
+  .bar, .chip { position:relative; color:var(--ink); }
+  .bar::before, .chip::before { content:""; position:absolute; left:0; top:2px; bottom:2px; width:3px; border-radius:2px; background:var(--c); }
+  .bar { pointer-events:none; margin:0 4px; padding:2px 6px 2px 10px; border-radius:4px; font-size:12.5px; line-height:1.4; font-weight:500; word-break:keep-all; overflow-wrap:anywhere; }
+  .bar.multi { background:var(--t); }
+  .bar.cl { margin-left:0; border-top-left-radius:0; border-bottom-left-radius:0; }
+  .bar.cl::before { display:none; }
   .bar.cr { margin-right:0; border-top-right-radius:0; border-bottom-right-radius:0; }
-  .bar.trip { background:var(--trip); color:var(--trip-ink); }
-  .bar.leave { background:var(--leave); color:var(--leave-ink); box-shadow:inset 0 0 0 1px var(--leave-line); font-weight:600; }
-  .bar.event { background:var(--event); color:var(--event-ink); box-shadow:inset 3px 0 0 var(--event-line); padding-left:10px; }
-  .bar.event.cl { box-shadow:none; }
 
   .note { color:var(--muted); font-size:12.5px; margin:12px 4px 0; }
   footer { margin:18px 4px 0; color:var(--muted); font-size:12px; line-height:1.6; }
@@ -98,11 +106,9 @@
   .daycard .dh { font-size:14px; font-weight:700; display:flex; gap:8px; align-items:center; }
   .daycard.sun .dh { color:var(--sun); } .daycard.sat .dh { color:var(--sat); }
   .daycard .tdy { font-size:11px; background:var(--brand); color:#fff; border-radius:999px; padding:0 8px; }
-  .daycard .chip { display:block; border-radius:9px; padding:6px 10px; font-size:14px; font-weight:600; }
-  .chip.trip { background:var(--trip); color:var(--trip-ink); }
-  .chip.leave { background:var(--leave); color:var(--leave-ink); box-shadow:inset 0 0 0 1px var(--leave-line); }
-  .chip.event { background:var(--event); color:var(--event-ink); box-shadow:inset 3px 0 0 var(--event-line); }
-  .chip small { font-weight:500; opacity:.85; margin-left:4px; }
+  .daycard .chip { display:block; border-radius:6px; padding:6px 10px 6px 14px; font-size:14px; font-weight:500; background:var(--t); }
+  .daycard .chip::before { top:5px; bottom:5px; left:5px; }
+  .chip small { color:var(--muted); font-weight:500; margin-left:6px; }
   .empty { color:var(--muted); text-align:center; padding:28px 0; }
 
   /* 드로어 */
@@ -120,15 +126,12 @@
   .sec { margin-top:20px; }
   .sec h4 { margin:0 0 8px; font-size:12px; font-weight:700; letter-spacing:.04em; color:var(--muted); display:flex; align-items:center; gap:8px; }
   .sec h4::before { content:""; width:10px; height:10px; border-radius:3px; }
-  .sec.trip h4::before { background:var(--trip); }
-  .sec.leave h4::before { background:var(--leave); box-shadow:inset 0 0 0 1px var(--leave-line); }
-  .sec.event h4::before { background:var(--event-line); }
+  .sec h4::before { width:4px; height:12px; border-radius:2px; background:var(--c); }
   .item { background:var(--soft); border:1px solid var(--line); border-radius:14px; padding:12px 14px; margin-bottom:8px; }
   .item .t { font-weight:700; font-size:15.5px; }
   .item .s { color:var(--muted); font-size:13.5px; margin-top:3px; white-space:pre-wrap; }
   .tag { display:inline-block; font-size:11.5px; padding:1px 8px; border-radius:999px; margin-right:8px; font-weight:700; vertical-align:1px; }
-  .tag.trip { background:var(--trip); color:var(--trip-ink); }
-  .tag.leave { background:var(--leave); color:var(--leave-ink); }
+  .tag.trip, .tag.leave { background:var(--t); color:var(--ink); box-shadow:inset 0 0 0 1px var(--c); }
 
   @media (max-width:900px) {
     main { padding:22px 14px 40px; }
@@ -274,7 +277,7 @@
         segs.forEach(function (sg) {
           var ln = 0; while (lanes[ln] !== undefined && lanes[ln] >= sg.cs) ln++;
           lanes[ln] = sg.ce;
-          var b = el('div', 'bar ' + sg.sp.kind + (sg.cl ? ' cl' : '') + (sg.cr ? ' cr' : ''), spanLabel(sg.sp));
+          var b = el('div', 'bar ' + sg.sp.kind + (sg.sp.start !== sg.sp.end ? ' multi' : '') + (sg.cl ? ' cl' : '') + (sg.cr ? ' cr' : ''), spanLabel(sg.sp));
           b.style.gridColumn = (sg.cs + 1) + ' / ' + (sg.ce + 2);
           b.style.gridRow = String(ln + 2);
           b.title = spanLabel(sg.sp) + (sg.sp.range ? ' (' + sg.sp.range + ')' : '');
