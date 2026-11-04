@@ -76,10 +76,30 @@
   .empty { color:var(--muted); padding:24px 0; text-align:center; }
   footer { margin-top:20px; color:var(--muted); font-size:12px; }
 
-  @media (max-width: 560px) {
-    main { padding: 16px 8px 32px; }
-    .cell { min-height:84px; padding:3px 2px; }
-    .chip { font-size:10px; padding:1px 3px; }
+  html, body { overflow-x: hidden; }
+  #agenda { display:none; }
+  .daycard { appearance:none; font:inherit; color:inherit; text-align:left; width:100%; background:var(--card); border:1px solid var(--line); border-radius:12px; padding:10px 12px; cursor:pointer; display:flex; flex-direction:column; gap:4px; }
+  .daycard:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+  .daycard.today { background:var(--today); border-color:var(--accent); }
+  .daycard.past { opacity:.6; }
+  .daycard.selected { box-shadow:0 0 0 2px var(--accent); }
+  .daycard .dh { font-size:14px; font-weight:700; }
+  .daycard.sun .dh { color:var(--sun); }
+  .daycard.sat .dh { color:var(--sat); }
+  .daycard .chip { font-size:14px; padding:3px 8px; }
+
+  /* 태블릿 */
+  @media (max-width: 900px) {
+    .cell { min-height:104px; padding:4px; }
+    .chip { font-size:11px; padding:2px 5px; }
+  }
+  /* 모바일: 달력 격자 대신 날짜 목록이 1열로 쌓임 */
+  @media (max-width: 640px) {
+    main { padding: 16px 12px 32px; }
+    .cal { display:none; }
+    #agenda { display:flex; flex-direction:column; gap:8px; }
+    .bar h2 { font-size:17px; }
+    .legend { margin-top:14px; }
   }
   @media (prefers-reduced-motion: reduce) { .drawer, .scrim { transition:none; } }
 </style>
@@ -103,6 +123,7 @@
     <div class="dow"><div>일</div><div>월</div><div>화</div><div>수</div><div>목</div><div>금</div><div>토</div></div>
     <div class="grid" id="grid"></div>
   </div>
+  <div id="agenda"></div>
   <div class="legend"><span><i style="background:var(--accent-bg)"></i>출장</span><span><i style="background:var(--leave-bg)"></i>휴가·기타</span><span><i style="background:var(--event-bg)"></i>행사</span></div>
   <div id="rangeNote" class="meta" style="display:none; margin-top:8px"></div>
   <footer>출장·휴가는 UWIN 부재 정보(이름·구분·날짜·시간, 일부 출장은 출장목적), 행사는 주간보고 기준입니다. 날짜를 누르면 세부 내용이 열립니다. 검색엔진에 노출되지 않도록 설정돼 있습니다.</footer>
@@ -173,6 +194,25 @@
       });
       grid.appendChild(c);
     }
+
+    // 모바일용 날짜 목록 (일정이 있는 날만)
+    var ag = $('agenda'); ag.textContent = '';
+    var n = 0;
+    for (var d2 = 1; d2 <= days; d2++) {
+      var k2 = y + '-' + pad(m + 1) + '-' + pad(d2), l2 = sorted(k2);
+      if (!l2.length) continue;
+      n++;
+      var dw = new Date(y, m, d2).getDay();
+      var card = el('button', 'daycard' + (dw === 0 ? ' sun' : '') + (dw === 6 ? ' sat' : '') + (k2 < todayIso ? ' past' : '') + (k2 === todayIso ? ' today' : '') + (k2 === selected ? ' selected' : ''));
+      card.type = 'button';
+      card.setAttribute('data-date', k2);
+      card.appendChild(el('span', 'dh', (m + 1) + '월 ' + d2 + '일 (' + DOW[dw] + ')' + (k2 === todayIso ? ' · 오늘' : '')));
+      l2.forEach(function (it) {
+        card.appendChild(el('span', 'chip ' + it.kind, it.kind === 'event' ? it.x.title : '(' + it.e.type + ') ' + it.e.name));
+      });
+      ag.appendChild(card);
+    }
+    if (!n) ag.appendChild(el('div', 'empty', '이 달에는 표시할 일정이 없습니다.'));
   }
 
   // ── 드로어 ──
@@ -225,18 +265,20 @@
     if (!$('drawer').classList.contains('open')) return;
     $('drawer').classList.remove('open'); $('drawer').setAttribute('aria-hidden', 'true');
     $('scrim').classList.remove('open');
-    var back = selected && document.querySelector('.cell[data-date="' + selected + '"]');
+    var key = selected;
     selected = null; render();
-    var target = back ? document.querySelector('.cell[data-date="' + back.getAttribute('data-date') + '"]') : null;
-    if (target) target.focus();
+    var cands = key ? document.querySelectorAll('[data-date="' + key + '"]') : [];
+    for (var i = 0; i < cands.length; i++) { if (cands[i].offsetParent !== null) { cands[i].focus(); break; } }
   }
 
   $('scrim').addEventListener('click', closeDrawer);          // 바깥 클릭
   $('dClose').addEventListener('click', closeDrawer);
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeDrawer(); });
-  $('grid').addEventListener('click', function (e) {
-    var c = e.target.closest('.cell[data-date]'); if (c) openDrawer(c.getAttribute('data-date'), c);
-  });
+  function onPick(e) {
+    var c = e.target.closest('[data-date]'); if (c) openDrawer(c.getAttribute('data-date'), c);
+  }
+  $('grid').addEventListener('click', onPick);
+  $('agenda').addEventListener('click', onPick);
   function shift(n) { var v = view.y * 12 + view.m + n; if (v < minMonth || v > maxMonth) return; view.y = Math.floor(v / 12); view.m = v % 12; render(); }
   $('prev').addEventListener('click', function () { shift(-1); });
   $('next').addEventListener('click', function () { shift(1); });
