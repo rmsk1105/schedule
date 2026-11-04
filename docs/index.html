@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow, noarchive">
+<title>센터 일정판</title>
+<style>
+  :root { --bg:#f6f7f9; --card:#fff; --text:#1c2430; --muted:#6b7686; --line:#e3e7ee; --accent:#1f7a5c; --warn-bg:#fdecea; --warn:#b3261e; --ok-bg:#e8f5ef; --chip:#eef1f6; --today:#e8f0fe; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#14181f; --card:#1d232d; --text:#e8ecf2; --muted:#9aa5b5; --line:#2c3441; --accent:#4cc09a; --warn-bg:#3a1f1d; --warn:#ff8a80; --ok-bg:#16302a; --chip:#2a3240; --today:#1f2d4a; } }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--text); font:16px/1.5 -apple-system,"Malgun Gothic","Apple SD Gothic Neo",sans-serif; }
+  main { max-width: 760px; margin: 0 auto; padding: 20px 16px 48px; }
+  h1 { font-size: 22px; margin: 0 0 4px; }
+  .meta { color: var(--muted); font-size: 13px; }
+  .meta span { display:block; }
+  .banner { margin: 14px 0; padding: 12px 14px; border-radius: 10px; font-size: 14px; }
+  .banner.warn { background: var(--warn-bg); color: var(--warn); font-weight: 600; }
+  .banner.ok { background: var(--ok-bg); color: var(--accent); }
+  .day { background: var(--card); border: 1px solid var(--line); border-radius: 12px; margin: 10px 0; padding: 10px 14px; }
+  .day.today { border-color: var(--accent); background: linear-gradient(var(--today), var(--today)), var(--card); }
+  .day h2 { font-size: 14px; margin: 0 0 6px; color: var(--muted); font-weight: 600; }
+  .day.today h2 { color: var(--accent); }
+  ul { list-style: none; margin: 0; padding: 0; }
+  li { padding: 5px 0; border-top: 1px solid var(--line); }
+  li:first-child { border-top: 0; }
+  .chip { display:inline-block; background: var(--chip); border-radius: 999px; padding: 0 8px; font-size: 12px; margin-right: 6px; color: var(--muted); }
+  .chip.trip { color: var(--accent); font-weight: 600; }
+  .sub { color: var(--muted); font-size: 13px; margin-left: 2px; }
+  .ev { font-weight: 600; }
+  .empty { color: var(--muted); text-align: center; padding: 28px 0; }
+  details summary { cursor: pointer; }
+  details div { margin: 4px 0 2px; font-size: 13px; color: var(--muted); white-space: pre-wrap; }
+  footer { margin-top: 24px; color: var(--muted); font-size: 12px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>센터 일정판</h1>
+  <div class="meta">
+    <span id="updated">불러오는 중…</span>
+    <span id="reported"></span>
+  </div>
+  <div id="banners"></div>
+  <div id="list"></div>
+  <footer>출장·휴가는 UWIN 부재 정보(이름·구분·날짜·시간, 일부 출장은 출장목적), 행사는 주간보고 기준입니다. 검색엔진에 노출되지 않도록 설정돼 있습니다.</footer>
+</main>
+<script>
+(function () {
+  var STALE_HOURS = 24;
+  var DOW = ['일','월','화','수','목','금','토'];
+  var $ = function (id) { return document.getElementById(id); };
+  function pad(n) { return String(n).padStart(2, '0'); }
+  function iso(d) { return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); }
+  function fmtTs(s) {
+    var d = new Date(s);
+    return d.getFullYear() + '.' + pad(d.getMonth() + 1) + '.' + pad(d.getDate()) + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes());
+  }
+  function get(url) {
+    return fetch(url + '?t=' + Date.now(), { cache: 'no-store' }).then(function (r) {
+      if (!r.ok) throw new Error(url + ' ' + r.status);
+      return r.json();
+    });
+  }
+  function el(tag, cls, text) {
+    var e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (text != null) e.textContent = text; // 항상 textContent — 데이터가 HTML로 해석되지 않게
+    return e;
+  }
+  function banner(kind, text) { $('banners').appendChild(el('div', 'banner ' + kind, text)); }
+
+  Promise.all([
+    get('data/uwin.json').catch(function () { return null; }),
+    get('data/events.json').catch(function () { return { updatedAt: null, events: [] }; }),
+    get('data/status.json').catch(function () { return null; })
+  ]).then(function (res) {
+    var uwin = res[0], ev = res[1], status = res[2];
+
+    if (!uwin) {
+      $('updated').textContent = '마지막 갱신: 정보 없음';
+      banner('warn', '⚠ 갱신 지연 — 일정 데이터를 불러오지 못했습니다. 표시된 정보가 없거나 오래됐을 수 있습니다.');
+    } else {
+      var age = (Date.now() - new Date(uwin.generatedAt).getTime()) / 3600000;
+      $('updated').textContent = '출장·휴가 마지막 갱신: ' + fmtTs(uwin.generatedAt);
+      if (!(age <= STALE_HOURS)) {
+        banner('warn', '⚠ 갱신 지연 — 마지막 갱신이 ' + Math.floor(age) + '시간 전입니다. 아래 정보는 최신이 아닐 수 있습니다.');
+      }
+      if (status && status.ok === false && new Date(status.lastAttemptAt) > new Date(uwin.generatedAt)) {
+        banner('warn', '최근 갱신 시도가 실패했습니다 (' + fmtTs(status.lastAttemptAt) + ').');
+      }
+    }
+    $('reported').textContent = ev.updatedAt ? '주간보고 마지막 반영: ' + ev.updatedAt : '주간보고 마지막 반영: 아직 없음';
+
+    var items = {}; // 날짜 → [{kind, ...}]
+    function add(d, it) { (items[d] = items[d] || []).push(it); }
+    var today = new Date(); today.setHours(12, 0, 0, 0);
+    var todayIso = iso(today);
+    var lastIso = uwin ? uwin.rangeTo : iso(new Date(today.getTime() + 30 * 86400000));
+
+    function eachDay(start, end, fn) {
+      var s = new Date(start + 'T12:00:00'), e = new Date(end + 'T12:00:00');
+      for (var d = s; d <= e; d = new Date(d.getTime() + 86400000)) {
+        var k = iso(d);
+        if (k >= todayIso && k <= lastIso) fn(k);
+      }
+    }
+
+    var events = (ev.events || []);
+    ((uwin && uwin.events) || []).forEach(function (e) {
+      var linked = events.filter(function (x) {
+        return e.type === '출장' && (x.who || []).indexOf(e.name) >= 0 && x.date <= e.end && (x.endDate || x.date) >= e.start;
+      });
+      eachDay(e.start, e.end, function (k) {
+        add(k, { kind: 'person', e: e, linked: linked });
+      });
+    });
+    events.forEach(function (x) {
+      eachDay(x.date, x.endDate || x.date, function (k) { add(k, { kind: 'event', x: x }); });
+    });
+
+    var days = Object.keys(items).sort();
+    var list = $('list');
+    if (!days.length) { list.appendChild(el('div', 'empty', '표시할 일정이 없습니다.')); return; }
+    days.forEach(function (k) {
+      var d = new Date(k + 'T12:00:00');
+      var box = el('section', 'day' + (k === todayIso ? ' today' : ''));
+      box.appendChild(el('h2', null, (d.getMonth() + 1) + '월 ' + d.getDate() + '일 (' + DOW[d.getDay()] + ')' + (k === todayIso ? ' · 오늘' : '')));
+      var ul = el('ul');
+      items[k].sort(function (a, b) { return a.kind === b.kind ? 0 : a.kind === 'event' ? -1 : 1; }).forEach(function (it) {
+        var li = el('li');
+        if (it.kind === 'event') {
+          var x = it.x, d1 = el('details'), s = el('summary');
+          s.appendChild(el('span', 'chip', '행사'));
+          s.appendChild(el('span', 'ev', x.title));
+          if (x.time) s.appendChild(el('span', 'sub', ' ' + x.time));
+          d1.appendChild(s);
+          var lines = [];
+          if (x.time) lines.push('일시: ' + (x.dateText || x.date) + ' ' + x.time);
+          else if (x.dateText) lines.push('일시: ' + x.dateText);
+          if (x.place) lines.push('장소: ' + x.place);
+          if (x.desc) lines.push('내용: ' + x.desc);
+          if (lines.length) d1.appendChild(el('div', null, lines.join('\n')));
+          else s.style.cursor = 'default';
+          li.appendChild(d1);
+        } else {
+          var e = it.e;
+          var isTrip = e.type === '출장';
+          li.appendChild(el('span', 'chip' + (isTrip ? ' trip' : ''), e.type));
+          li.appendChild(el('span', null, e.name));
+          if (e.from) li.appendChild(el('span', 'sub', ' ' + e.from + '~' + e.to));
+          if (it.linked.length) li.appendChild(el('span', 'sub', ' · ' + it.linked.map(function (x) { return x.title; }).join(', ')));
+          if (e.purpose) li.appendChild(el('div', 'sub', e.purpose));
+        }
+        ul.appendChild(li);
+      });
+      box.appendChild(ul);
+      list.appendChild(box);
+    });
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,42 @@
+{
+  "generatedAt": "2026-11-04T01:10:32.496Z",
+  "rangeFrom": "2026-11-04",
+  "rangeTo": "2026-12-04",
+  "events": [
+    {
+      "name": "이상욱",
+      "type": "출장",
+      "start": "2026-11-02",
+      "end": "2026-11-07",
+      "from": null,
+      "to": null,
+      "purpose": "일반출장 / 학회(학술회의)"
+    },
+    {
+      "name": "장준민",
+      "type": "출장",
+      "start": "2026-11-02",
+      "end": "2026-11-07",
+      "from": null,
+      "to": null,
+      "purpose": "산학협력 우수대학 및 AI 선도기업 벤치마킹"
+    },
+    {
+      "name": "조인주",
+      "type": "연가",
+      "start": "2026-11-06",
+      "end": "2026-11-06",
+      "from": null,
+      "to": null
+    },
+    {
+      "name": "이상욱",
+      "type": "출장",
+      "start": "2026-11-26",
+      "end": "2026-11-27",
+      "from": null,
+      "to": null,
+      "purpose": "학회(학술회의)"
+    }
+  ]
+}
