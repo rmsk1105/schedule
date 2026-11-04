@@ -6,32 +6,82 @@
 <meta name="robots" content="noindex, nofollow, noarchive">
 <title>센터 일정판</title>
 <style>
-  :root { --bg:#f6f7f9; --card:#fff; --text:#1c2430; --muted:#6b7686; --line:#e3e7ee; --accent:#1f7a5c; --warn-bg:#fdecea; --warn:#b3261e; --ok-bg:#e8f5ef; --chip:#eef1f6; --today:#e8f0fe; }
-  @media (prefers-color-scheme: dark) { :root { --bg:#14181f; --card:#1d232d; --text:#e8ecf2; --muted:#9aa5b5; --line:#2c3441; --accent:#4cc09a; --warn-bg:#3a1f1d; --warn:#ff8a80; --ok-bg:#16302a; --chip:#2a3240; --today:#1f2d4a; } }
+  :root {
+    --bg:#f6f7f9; --card:#fff; --text:#1c2430; --muted:#6b7686; --line:#e3e7ee;
+    --accent:#1f7a5c; --accent-bg:#e1f3ec; --event:#2f5fd0; --event-bg:#e6edfc; --leave-bg:#eef1f6;
+    --warn-bg:#fdecea; --warn:#b3261e; --today:#e8f0fe; --sun:#c0392b; --sat:#2f5fd0; --scrim:rgba(15,20,30,.45);
+  }
+  @media (prefers-color-scheme: dark) { :root {
+    --bg:#14181f; --card:#1d232d; --text:#e8ecf2; --muted:#9aa5b5; --line:#2c3441;
+    --accent:#4cc09a; --accent-bg:#163a2f; --event:#8fb0ff; --event-bg:#1f2d4f; --leave-bg:#2a3240;
+    --warn-bg:#3a1f1d; --warn:#ff8a80; --today:#1f2d4a; --sun:#ff8a80; --sat:#8fb0ff; --scrim:rgba(0,0,0,.6);
+  } }
   * { box-sizing: border-box; }
   body { margin:0; background:var(--bg); color:var(--text); font:16px/1.5 -apple-system,"Malgun Gothic","Apple SD Gothic Neo",sans-serif; }
-  main { max-width: 760px; margin: 0 auto; padding: 20px 16px 48px; }
+  main { max-width: 980px; margin: 0 auto; padding: 20px 16px 40px; }
   h1 { font-size: 22px; margin: 0 0 4px; }
   .meta { color: var(--muted); font-size: 13px; }
   .meta span { display:block; }
-  .banner { margin: 14px 0; padding: 12px 14px; border-radius: 10px; font-size: 14px; }
-  .banner.warn { background: var(--warn-bg); color: var(--warn); font-weight: 600; }
-  .banner.ok { background: var(--ok-bg); color: var(--accent); }
-  .day { background: var(--card); border: 1px solid var(--line); border-radius: 12px; margin: 10px 0; padding: 10px 14px; }
-  .day.today { border-color: var(--accent); background: linear-gradient(var(--today), var(--today)), var(--card); }
-  .day h2 { font-size: 14px; margin: 0 0 6px; color: var(--muted); font-weight: 600; }
-  .day.today h2 { color: var(--accent); }
-  ul { list-style: none; margin: 0; padding: 0; }
-  li { padding: 5px 0; border-top: 1px solid var(--line); }
-  li:first-child { border-top: 0; }
-  .chip { display:inline-block; background: var(--chip); border-radius: 999px; padding: 0 8px; font-size: 12px; margin-right: 6px; color: var(--muted); }
-  .chip.trip { color: var(--accent); font-weight: 600; }
-  .sub { color: var(--muted); font-size: 13px; margin-left: 2px; }
-  .ev { font-weight: 600; }
-  .empty { color: var(--muted); text-align: center; padding: 28px 0; }
-  details summary { cursor: pointer; }
-  details div { margin: 4px 0 2px; font-size: 13px; color: var(--muted); white-space: pre-wrap; }
-  footer { margin-top: 24px; color: var(--muted); font-size: 12px; }
+  .banner { margin: 14px 0 0; padding: 12px 14px; border-radius: 10px; font-size: 14px; background: var(--warn-bg); color: var(--warn); font-weight: 600; }
+
+  .bar { display:flex; align-items:center; gap:8px; margin: 16px 0 8px; }
+  .bar h2 { font-size: 18px; margin: 0; flex: 1; }
+  .bar button { border:1px solid var(--line); background:var(--card); color:var(--text); border-radius:8px; min-width:40px; height:36px; font-size:15px; cursor:pointer; }
+  .bar button:disabled { opacity:.35; cursor:default; }
+  .bar button.today { padding:0 12px; font-size:13px; }
+
+  .cal { background:var(--card); border:1px solid var(--line); border-radius:12px; overflow:hidden; }
+  .dow, .grid { display:grid; grid-template-columns: repeat(7, minmax(0,1fr)); }
+  .dow div { text-align:center; font-size:12px; padding:6px 0; color:var(--muted); border-bottom:1px solid var(--line); }
+  .dow div:first-child, .cell.sun .num { color:var(--sun); }
+  .dow div:last-child, .cell.sat .num { color:var(--sat); }
+  .cell { appearance:none; font:inherit; color:inherit; text-align:left; background:var(--card); border:0; border-right:1px solid var(--line); border-bottom:1px solid var(--line); min-height:92px; padding:4px; cursor:pointer; display:flex; flex-direction:column; gap:2px; min-width:0; }
+  .cell:nth-child(7n) { border-right:0; }
+  .cell:hover { background: var(--leave-bg); }
+  .cell:focus-visible { outline:2px solid var(--accent); outline-offset:-2px; }
+  .cell.blank { background:transparent; cursor:default; }
+  .cell.past { opacity:.55; }
+  .cell.today { background:var(--today); }
+  .cell.selected { box-shadow: inset 0 0 0 2px var(--accent); }
+  .num { font-size:13px; font-weight:600; padding:0 2px; }
+  .cell.today .num { color:var(--accent); }
+  .chip { display:block; font-size:11px; line-height:1.35; padding:1px 5px; border-radius:4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .chip.trip { background:var(--accent-bg); color:var(--accent); font-weight:600; }
+  .chip.leave { background:var(--leave-bg); color:var(--muted); }
+  .chip.event { background:var(--event-bg); color:var(--event); font-weight:600; }
+  .more { font-size:11px; color:var(--muted); padding-left:4px; }
+  .legend { display:flex; gap:12px; margin:10px 2px 0; font-size:12px; color:var(--muted); flex-wrap:wrap; }
+  .legend i { display:inline-block; width:10px; height:10px; border-radius:3px; margin-right:4px; vertical-align:-1px; }
+
+  /* 드로어 */
+  .scrim { position:fixed; inset:0; background:var(--scrim); opacity:0; visibility:hidden; transition:opacity .2s, visibility .2s; z-index:10; }
+  .scrim.open { opacity:1; visibility:visible; }
+  .drawer { position:fixed; top:0; right:0; bottom:0; width:360px; max-width:100vw; background:var(--card); border-left:1px solid var(--line); box-shadow:-8px 0 24px rgba(0,0,0,.18); transform:translateX(100%); visibility:hidden; transition:transform .22s ease, visibility .22s; z-index:11; display:flex; flex-direction:column; }
+  .drawer.open { transform:translateX(0); visibility:visible; }
+  .drawer header { display:flex; align-items:center; padding:16px; border-bottom:1px solid var(--line); }
+  .drawer header h3 { margin:0; flex:1; font-size:17px; }
+  .drawer header button { border:0; background:transparent; color:var(--text); font-size:22px; line-height:1; width:36px; height:36px; border-radius:8px; cursor:pointer; }
+  .drawer header button:hover { background:var(--leave-bg); }
+  .drawer .body { padding:8px 16px 24px; overflow-y:auto; }
+  .sec { margin-top:14px; }
+  .sec h4 { margin:0 0 6px; font-size:12px; color:var(--muted); font-weight:600; letter-spacing:.02em; }
+  .item { padding:8px 0; border-top:1px solid var(--line); }
+  .item:first-of-type { border-top:0; }
+  .item .t { font-weight:600; }
+  .item .s { color:var(--muted); font-size:13px; margin-top:2px; white-space:pre-wrap; }
+  .tag { display:inline-block; font-size:12px; padding:0 7px; border-radius:999px; margin-right:6px; font-weight:600; }
+  .tag.trip { background:var(--accent-bg); color:var(--accent); }
+  .tag.leave { background:var(--leave-bg); color:var(--muted); }
+  .tag.event { background:var(--event-bg); color:var(--event); }
+  .empty { color:var(--muted); padding:24px 0; text-align:center; }
+  footer { margin-top:20px; color:var(--muted); font-size:12px; }
+
+  @media (max-width: 560px) {
+    main { padding: 16px 8px 32px; }
+    .cell { min-height:68px; padding:3px 2px; }
+    .chip { font-size:10px; padding:0 3px; }
+  }
+  @media (prefers-reduced-motion: reduce) { .drawer, .scrim { transition:none; } }
 </style>
 </head>
 <body>
@@ -42,9 +92,27 @@
     <span id="reported"></span>
   </div>
   <div id="banners"></div>
-  <div id="list"></div>
-  <footer>출장·휴가는 UWIN 부재 정보(이름·구분·날짜·시간, 일부 출장은 출장목적), 행사는 주간보고 기준입니다. 검색엔진에 노출되지 않도록 설정돼 있습니다.</footer>
+
+  <div class="bar">
+    <button id="prev" aria-label="이전 달">◀</button>
+    <h2 id="title"></h2>
+    <button id="todayBtn" class="today">오늘</button>
+    <button id="next" aria-label="다음 달">▶</button>
+  </div>
+  <div class="cal">
+    <div class="dow"><div>일</div><div>월</div><div>화</div><div>수</div><div>목</div><div>금</div><div>토</div></div>
+    <div class="grid" id="grid"></div>
+  </div>
+  <div class="legend"><span><i style="background:var(--accent-bg)"></i>출장</span><span><i style="background:var(--leave-bg)"></i>휴가·기타</span><span><i style="background:var(--event-bg)"></i>행사</span></div>
+  <footer>출장·휴가는 UWIN 부재 정보(이름·구분·날짜·시간, 일부 출장은 출장목적), 행사는 주간보고 기준입니다. 날짜를 누르면 세부 내용이 열립니다. 검색엔진에 노출되지 않도록 설정돼 있습니다.</footer>
 </main>
+
+<div class="scrim" id="scrim"></div>
+<aside class="drawer" id="drawer" role="dialog" aria-modal="true" aria-labelledby="dTitle" aria-hidden="true">
+  <header><h3 id="dTitle"></h3><button id="dClose" aria-label="닫기">×</button></header>
+  <div class="body" id="dBody"></div>
+</aside>
+
 <script>
 (function () {
   var STALE_HOURS = 24;
@@ -52,112 +120,164 @@
   var $ = function (id) { return document.getElementById(id); };
   function pad(n) { return String(n).padStart(2, '0'); }
   function iso(d) { return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); }
-  function fmtTs(s) {
-    var d = new Date(s);
-    return d.getFullYear() + '.' + pad(d.getMonth() + 1) + '.' + pad(d.getDate()) + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes());
-  }
+  function fmtTs(s) { var d = new Date(s); return d.getFullYear() + '.' + pad(d.getMonth() + 1) + '.' + pad(d.getDate()) + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes()); }
   function get(url) {
-    return fetch(url + '?t=' + Date.now(), { cache: 'no-store' }).then(function (r) {
-      if (!r.ok) throw new Error(url + ' ' + r.status);
-      return r.json();
-    });
+    return fetch(url + '?t=' + Date.now(), { cache: 'no-store' }).then(function (r) { if (!r.ok) throw new Error(url + ' ' + r.status); return r.json(); });
   }
-  function el(tag, cls, text) {
-    var e = document.createElement(tag);
-    if (cls) e.className = cls;
-    if (text != null) e.textContent = text; // 항상 textContent — 데이터가 HTML로 해석되지 않게
-    return e;
-  }
-  function banner(kind, text) { $('banners').appendChild(el('div', 'banner ' + kind, text)); }
+  function el(tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
 
+  var today = new Date(); today.setHours(12, 0, 0, 0);
+  var todayIso = iso(today);
+  var items = {};            // 날짜 → [{kind:'event'|'trip'|'leave', ...}]
+  var view = { y: today.getFullYear(), m: today.getMonth() };
+  var minMonth = view.y * 12 + view.m, maxMonth = minMonth;
+  var selected = null, lastFocus = null;
+
+  function add(k, it) { (items[k] = items[k] || []).push(it); }
+  function eachDay(start, end, fn) {
+    var s = new Date(start + 'T12:00:00'), e = new Date(end + 'T12:00:00'), n = 0;
+    for (var d = s; d <= e && n < 400; d = new Date(d.getTime() + 86400000), n++) fn(iso(d));
+  }
+  var ORDER = { event: 0, trip: 1, leave: 2 };
+  function sorted(k) { return (items[k] || []).slice().sort(function (a, b) { return ORDER[a.kind] - ORDER[b.kind]; }); }
+
+  // ── 달력 ──
+  function render() {
+    var y = view.y, m = view.m;
+    $('title').textContent = y + '년 ' + (m + 1) + '월';
+    $('prev').disabled = (y * 12 + m) <= minMonth;
+    $('next').disabled = (y * 12 + m) >= maxMonth;
+    var grid = $('grid'); grid.textContent = '';
+    var first = new Date(y, m, 1).getDay(), days = new Date(y, m + 1, 0).getDate();
+    var maxChips = window.innerWidth < 560 ? 2 : 3;
+    var total = Math.ceil((first + days) / 7) * 7;
+    for (var i = 0; i < total; i++) {
+      var dayNum = i - first + 1;
+      if (dayNum < 1 || dayNum > days) { grid.appendChild(el('div', 'cell blank')); continue; }
+      var k = y + '-' + pad(m + 1) + '-' + pad(dayNum), dow = i % 7, list = sorted(k);
+      var c = el('button', 'cell' + (dow === 0 ? ' sun' : '') + (dow === 6 ? ' sat' : '') + (k < todayIso ? ' past' : '') + (k === todayIso ? ' today' : '') + (k === selected ? ' selected' : ''));
+      c.type = 'button';
+      c.setAttribute('data-date', k);
+      c.setAttribute('aria-label', (m + 1) + '월 ' + dayNum + '일, 일정 ' + list.length + '건');
+      c.appendChild(el('span', 'num', String(dayNum)));
+      list.slice(0, maxChips).forEach(function (it) {
+        var label = it.kind === 'event' ? it.x.title : it.e.name;
+        var chip = el('span', 'chip ' + it.kind, label);
+        chip.title = it.kind === 'event' ? it.x.title : it.e.name + ' ' + it.e.type;
+        c.appendChild(chip);
+      });
+      if (list.length > maxChips) c.appendChild(el('span', 'more', '+' + (list.length - maxChips)));
+      grid.appendChild(c);
+    }
+  }
+
+  // ── 드로어 ──
+  function section(title) { var s = el('div', 'sec'); s.appendChild(el('h4', null, title)); return s; }
+  function openDrawer(k, trigger) {
+    selected = k; lastFocus = trigger || null;
+    var d = new Date(k + 'T12:00:00');
+    $('dTitle').textContent = (d.getMonth() + 1) + '월 ' + d.getDate() + '일 (' + DOW[d.getDay()] + ')' + (k === todayIso ? ' · 오늘' : '');
+    var body = $('dBody'); body.textContent = '';
+    var list = sorted(k);
+    if (!list.length) body.appendChild(el('div', 'empty', '등록된 일정이 없습니다.'));
+    var groups = [['event', '행사'], ['trip', '출장'], ['leave', '휴가·기타']];
+    groups.forEach(function (g) {
+      var part = list.filter(function (it) { return it.kind === g[0]; });
+      if (!part.length) return;
+      var sec = section(g[1]);
+      part.forEach(function (it) {
+        var row = el('div', 'item'), t = el('div', 't');
+        if (it.kind === 'event') {
+          t.textContent = it.x.title; row.appendChild(t);
+          var lines = [];
+          if (it.x.dateText) lines.push('일시: ' + it.x.dateText + (it.x.time ? ' ' + it.x.time : ''));
+          else if (it.x.time) lines.push('일시: ' + it.x.time);
+          if (it.x.place) lines.push('장소: ' + it.x.place);
+          if (it.x.desc) lines.push('내용: ' + it.x.desc);
+          if (lines.length) row.appendChild(el('div', 's', lines.join('\n')));
+        } else {
+          var e = it.e;
+          t.appendChild(el('span', 'tag ' + it.kind, e.type));
+          t.appendChild(document.createTextNode(e.name));
+          row.appendChild(t);
+          var sub = [];
+          sub.push(e.start === e.end ? '' : e.start.slice(5).replace('-', '/') + ' ~ ' + e.end.slice(5).replace('-', '/'));
+          if (e.from) sub.push(e.from + '~' + e.to);
+          sub = sub.filter(Boolean);
+          if (sub.length) row.appendChild(el('div', 's', sub.join(' · ')));
+          if (e.purpose) row.appendChild(el('div', 's', '출장목적: ' + e.purpose));
+          if (it.linked && it.linked.length) row.appendChild(el('div', 's', '행사: ' + it.linked.map(function (x) { return x.title; }).join(', ')));
+        }
+        sec.appendChild(row);
+      });
+      body.appendChild(sec);
+    });
+    $('drawer').classList.add('open'); $('drawer').setAttribute('aria-hidden', 'false');
+    $('scrim').classList.add('open');
+    render();
+    $('dClose').focus();
+  }
+  function closeDrawer() {
+    if (!$('drawer').classList.contains('open')) return;
+    $('drawer').classList.remove('open'); $('drawer').setAttribute('aria-hidden', 'true');
+    $('scrim').classList.remove('open');
+    var back = selected && document.querySelector('.cell[data-date="' + selected + '"]');
+    selected = null; render();
+    var target = back ? document.querySelector('.cell[data-date="' + back.getAttribute('data-date') + '"]') : null;
+    if (target) target.focus();
+  }
+
+  $('scrim').addEventListener('click', closeDrawer);          // 바깥 클릭
+  $('dClose').addEventListener('click', closeDrawer);
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeDrawer(); });
+  $('grid').addEventListener('click', function (e) {
+    var c = e.target.closest('.cell[data-date]'); if (c) openDrawer(c.getAttribute('data-date'), c);
+  });
+  function shift(n) { var v = view.y * 12 + view.m + n; if (v < minMonth || v > maxMonth) return; view.y = Math.floor(v / 12); view.m = v % 12; render(); }
+  $('prev').addEventListener('click', function () { shift(-1); });
+  $('next').addEventListener('click', function () { shift(1); });
+  $('todayBtn').addEventListener('click', function () { view.y = today.getFullYear(); view.m = today.getMonth(); render(); });
+  var rt; window.addEventListener('resize', function () { clearTimeout(rt); rt = setTimeout(render, 150); });
+
+  // ── 데이터 ──
+  function banner(text) { $('banners').appendChild(el('div', 'banner', text)); }
   Promise.all([
     get('data/uwin.json').catch(function () { return null; }),
     get('data/events.json').catch(function () { return { updatedAt: null, events: [] }; }),
     get('data/status.json').catch(function () { return null; })
   ]).then(function (res) {
     var uwin = res[0], ev = res[1], status = res[2];
-
     if (!uwin) {
       $('updated').textContent = '마지막 갱신: 정보 없음';
-      banner('warn', '⚠ 갱신 지연 — 일정 데이터를 불러오지 못했습니다. 표시된 정보가 없거나 오래됐을 수 있습니다.');
+      banner('⚠ 갱신 지연 — 일정 데이터를 불러오지 못했습니다. 표시된 정보가 없거나 오래됐을 수 있습니다.');
     } else {
       var age = (Date.now() - new Date(uwin.generatedAt).getTime()) / 3600000;
       $('updated').textContent = '출장·휴가 마지막 갱신: ' + fmtTs(uwin.generatedAt);
-      if (!(age <= STALE_HOURS)) {
-        banner('warn', '⚠ 갱신 지연 — 마지막 갱신이 ' + Math.floor(age) + '시간 전입니다. 아래 정보는 최신이 아닐 수 있습니다.');
-      }
-      if (status && status.ok === false && new Date(status.lastAttemptAt) > new Date(uwin.generatedAt)) {
-        banner('warn', '최근 갱신 시도가 실패했습니다 (' + fmtTs(status.lastAttemptAt) + ').');
-      }
+      if (!(age <= STALE_HOURS)) banner('⚠ 갱신 지연 — 마지막 갱신이 ' + Math.floor(age) + '시간 전입니다. 아래 정보는 최신이 아닐 수 있습니다.');
+      if (status && status.ok === false && new Date(status.lastAttemptAt) > new Date(uwin.generatedAt)) banner('최근 갱신 시도가 실패했습니다 (' + fmtTs(status.lastAttemptAt) + ').');
     }
     $('reported').textContent = ev.updatedAt ? '주간보고 마지막 반영: ' + ev.updatedAt : '주간보고 마지막 반영: 아직 없음';
 
-    var items = {}; // 날짜 → [{kind, ...}]
-    function add(d, it) { (items[d] = items[d] || []).push(it); }
-    var today = new Date(); today.setHours(12, 0, 0, 0);
-    var todayIso = iso(today);
-    var lastIso = uwin ? uwin.rangeTo : iso(new Date(today.getTime() + 30 * 86400000));
-
-    function eachDay(start, end, fn) {
-      var s = new Date(start + 'T12:00:00'), e = new Date(end + 'T12:00:00');
-      for (var d = s; d <= e; d = new Date(d.getTime() + 86400000)) {
-        var k = iso(d);
-        if (k >= todayIso && k <= lastIso) fn(k);
-      }
-    }
-
-    var events = (ev.events || []);
+    var events = ev.events || [];
     ((uwin && uwin.events) || []).forEach(function (e) {
       var linked = events.filter(function (x) {
         return e.type === '출장' && (x.who || []).indexOf(e.name) >= 0 && x.date <= e.end && (x.endDate || x.date) >= e.start;
       });
-      eachDay(e.start, e.end, function (k) {
-        add(k, { kind: 'person', e: e, linked: linked });
-      });
+      eachDay(e.start, e.end, function (k) { add(k, { kind: e.type === '출장' ? 'trip' : 'leave', e: e, linked: linked }); });
     });
-    events.forEach(function (x) {
-      eachDay(x.date, x.endDate || x.date, function (k) { add(k, { kind: 'event', x: x }); });
-    });
+    events.forEach(function (x) { eachDay(x.date, x.endDate || x.date, function (k) { add(k, { kind: 'event', x: x }); }); });
 
-    var days = Object.keys(items).sort();
-    var list = $('list');
-    if (!days.length) { list.appendChild(el('div', 'empty', '표시할 일정이 없습니다.')); return; }
-    days.forEach(function (k) {
-      var d = new Date(k + 'T12:00:00');
-      var box = el('section', 'day' + (k === todayIso ? ' today' : ''));
-      box.appendChild(el('h2', null, (d.getMonth() + 1) + '월 ' + d.getDate() + '일 (' + DOW[d.getDay()] + ')' + (k === todayIso ? ' · 오늘' : '')));
-      var ul = el('ul');
-      items[k].sort(function (a, b) { return a.kind === b.kind ? 0 : a.kind === 'event' ? -1 : 1; }).forEach(function (it) {
-        var li = el('li');
-        if (it.kind === 'event') {
-          var x = it.x, d1 = el('details'), s = el('summary');
-          s.appendChild(el('span', 'chip', '행사'));
-          s.appendChild(el('span', 'ev', x.title));
-          if (x.time) s.appendChild(el('span', 'sub', ' ' + x.time));
-          d1.appendChild(s);
-          var lines = [];
-          if (x.time) lines.push('일시: ' + (x.dateText || x.date) + ' ' + x.time);
-          else if (x.dateText) lines.push('일시: ' + x.dateText);
-          if (x.place) lines.push('장소: ' + x.place);
-          if (x.desc) lines.push('내용: ' + x.desc);
-          if (lines.length) d1.appendChild(el('div', null, lines.join('\n')));
-          else s.style.cursor = 'default';
-          li.appendChild(d1);
-        } else {
-          var e = it.e;
-          var isTrip = e.type === '출장';
-          li.appendChild(el('span', 'chip' + (isTrip ? ' trip' : ''), e.type));
-          li.appendChild(el('span', null, e.name));
-          if (e.from) li.appendChild(el('span', 'sub', ' ' + e.from + '~' + e.to));
-          if (it.linked.length) li.appendChild(el('span', 'sub', ' · ' + it.linked.map(function (x) { return x.title; }).join(', ')));
-          if (e.purpose) li.appendChild(el('div', 'sub', e.purpose));
-        }
-        ul.appendChild(li);
-      });
-      box.appendChild(ul);
-      list.appendChild(box);
+    Object.keys(items).forEach(function (k) {
+      var mm = Number(k.slice(0, 4)) * 12 + Number(k.slice(5, 7)) - 1;
+      if (mm > maxMonth) maxMonth = mm;
     });
+    if (uwin) {
+      var r = Number(uwin.rangeTo.slice(0, 4)) * 12 + Number(uwin.rangeTo.slice(5, 7)) - 1;
+      if (r > maxMonth) maxMonth = r;
+    }
+    render();
   });
+  render();
 })();
 </script>
 </body>
