@@ -386,6 +386,21 @@
     html.forEach(function (h) { p.appendChild(h.b ? el('b', null, h.b) : document.createTextNode(h.t)); });
     $('pills').appendChild(p);
   }
+  // 반복 일정(예: 매주 화요일 회의)을 달력 범위의 날짜로 풀어낸다. 공휴일·휴회일(exclude)은 뺀다.
+  function expandRecurring(ev) {
+    var out = [], hol = ev.holidays || [];
+    var from = new Date(view.y, view.m, 1, 12), to = new Date(Math.floor(maxMonth / 12), maxMonth % 12 + 1, 0, 12);
+    (ev.recurring || []).forEach(function (r) {
+      for (var d = new Date(from); d <= to; d = new Date(d.getTime() + 86400000)) {
+        var k = iso(d);
+        if (d.getDay() !== r.weekday || (r.from && k < r.from) || (r.until && k > r.until)) continue;
+        if (hol.indexOf(k) >= 0 || (r.exclude || []).indexOf(k) >= 0) continue;
+        out.push({ date: k, title: r.title, time: r.time || '', place: r.place || '', desc: r.desc || '',
+                   dateText: d.getFullYear() + '.' + pad(d.getMonth() + 1) + '.' + pad(d.getDate()) + '(' + DOW[d.getDay()] + ')' });
+      }
+    });
+    return out;
+  }
   function banner(text) { $('banners').appendChild(el('div', 'banner', text)); }
 
   Promise.all([
@@ -405,7 +420,7 @@
     }
     pill([{ t: '주간보고 반영 ' }, { b: ev.updatedAt || '아직 없음' }]);
 
-    var events = ev.events || [];
+    var events = (ev.events || []).concat(expandRecurring(ev));
     ((uwin && uwin.events) || []).forEach(function (e) {
       var kind = e.type === '출장' ? 'trip' : 'leave';
       var linked = events.filter(function (x) {
@@ -417,7 +432,7 @@
     });
     events.forEach(function (x) {
       var end = x.endDate || x.date;
-      var sp = { kind: 'event', start: x.date, end: end, label: x.title, time: '', range: end !== x.date ? md(x.date) + '~' + md(end) : '' };
+      var sp = { kind: 'event', start: x.date, end: end, label: x.title, time: x.time || '', range: end !== x.date ? md(x.date) + '~' + md(end) : '' };
       spans.push(sp);
       eachDay(x.date, end, function (k) { add(k, { kind: 'event', x: x, sp: sp }); });
     });
