@@ -421,7 +421,7 @@
     pill([{ t: '주간보고 반영 ' }, { b: ev.updatedAt || '아직 없음' }]);
 
     var events = (ev.events || []).concat(expandRecurring(ev));
-    ((uwin && uwin.events) || []).forEach(function (e) {
+    ((uwin && uwin.events) || []).concat(ev.manualLeaves || []).forEach(function (e) {
       var kind = e.type === '출장' ? 'trip' : 'leave';
       var linked = events.filter(function (x) {
         return e.type === '출장' && (x.who || []).indexOf(e.name) >= 0 && x.date <= e.end && (x.endDate || x.date) >= e.start;
