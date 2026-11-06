@@ -18,7 +18,7 @@
   ],
   "timetable": [
     {
-      "owner": "이윤호", "from": "2026-11-02", "until": "2026-12-14",
+      "label": "센터장님 수업시간표", "from": "2026-11-02", "until": "2026-12-14",
       "slots": [
         { "weekday": 1, "start": "14:00", "end": "16:00", "title": "수업", "place": "" },
         { "weekday": 2, "start": "09:00", "end": "12:00", "title": "수업", "place": "" },

@@ -373,7 +373,7 @@
             var tb = el('div', 'ttb'); tb.appendChild(el('b', null, sl.title));
             tb.appendChild(document.createTextNode(' ' + (sl.place || '')));
             tb.style.top = ((a.s - hs * 60) * PX / 60) + 'px'; tb.style.height = ((a.e - a.s) * PX / 60 - 2) + 'px';
-            tb.title = tt.owner + ' 수업: ' + sl.title + ' ' + sl.start + '~' + sl.end + (sl.place ? ' ' + sl.place : '');
+            tb.title = (tt.label || '수업') + ': ' + sl.title + ' ' + sl.start + '~' + sl.end + (sl.place ? ' ' + sl.place : '');
             col.appendChild(tb);
           });
         });
@@ -632,7 +632,7 @@
     pill([{ t: '주간보고 반영 ' }, { b: ev.updatedAt || '아직 없음' }]);
 
     timetables = ev.timetable || []; holidays = ev.holidays || [];
-    if (timetables.length) $('ttLabel').textContent = timetables[0].owner + ' 수업시간표';
+    if (timetables.length) $('ttLabel').textContent = timetables[0].label || '수업시간표';
     else $('ttWrap').style.display = 'none';
     $('ttOn').checked = ttOn;
     var events = (ev.events || []).concat(expandRecurring(ev));
