@@ -247,7 +247,7 @@
   var today = new Date(); today.setHours(12, 0, 0, 0);
   var todayIso = iso(today);
   var view = { y: today.getFullYear(), m: today.getMonth() };
-  var minMonth = view.y * 12 + view.m, maxMonth = minMonth + 3;   // 이번 달부터 3개월 뒤까지
+  var minMonth = 2026 * 12 + 10, maxMonth = view.y * 12 + view.m + 3;   // 일정판을 쓰기 시작한 2026년 11월부터 ~ 이번 달+3개월까지 (지난 달도 계속 볼 수 있음)
   var rangeTo = null;           // UWIN 출장·휴가 조회 마지막 날짜
   var items = {};               // 날짜 → 그날의 항목 (드로어·목록용)
   var spans = [];               // 막대용: {kind,start,end,label,time,range}
@@ -609,7 +609,7 @@
   // 반복 일정(예: 매주 화요일 회의)을 달력 범위의 날짜로 풀어낸다. 공휴일·휴회일(exclude)은 뺀다.
   function expandRecurring(ev) {
     var out = [], hol = ev.holidays || [];
-    var from = new Date(view.y, view.m, 1, 12), to = new Date(Math.floor(maxMonth / 12), maxMonth % 12 + 1, 0, 12);
+    var from = new Date(Math.floor(minMonth / 12), minMonth % 12, 1, 12), to = new Date(Math.floor(maxMonth / 12), maxMonth % 12 + 1, 0, 12);
     (ev.recurring || []).forEach(function (r) {
       for (var d = new Date(from); d <= to; d = new Date(d.getTime() + 86400000)) {
         var k = iso(d);
