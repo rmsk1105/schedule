@@ -74,15 +74,13 @@
   .cell:nth-child(7n) { border-right:0; }
   .cell:hover { background:var(--soft); }
   .cell.blank { cursor:default; background:transparent !important; }
-  .cell.today { box-shadow:inset 0 0 0 2px var(--today-line); }
   .cell.selected { box-shadow:inset 0 0 0 2px var(--brand); }
-  .cell.today.selected { box-shadow:inset 0 0 0 2px var(--brand); }
   .cell:focus-visible { outline:2px solid var(--brand); outline-offset:-2px; }
   .num { position:relative; grid-row:1; pointer-events:none; padding:6px 0 2px 8px; font-size:13px; font-weight:600; height:34px; }
   .num span { display:inline-grid; place-items:center; min-width:26px; height:26px; border-radius:13px; padding:0 4px; }
   .num.sun { color:var(--sun); } .num.sat { color:var(--sat); }
   .num.past { opacity:.45; }
-  .num.today span { font-weight:800; }
+  .num.today span { font-weight:800; box-shadow:inset 0 0 0 2px var(--today-line); }
   /* 갤럭시 캘린더 스타일: 왼쪽 색 선 + 일반 글씨. 여러 날 이어지는 일정만 옅은 배경으로 연결 */
   .trip { --c:var(--c-trip); --t:var(--t-trip); }
   .leave { --c:var(--c-leave); --t:var(--t-leave); }
@@ -120,7 +118,6 @@
   .wv-cols { position:relative; display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); }
   .wv-col { position:relative; border-left:1px solid var(--line); cursor:pointer; }
   .wv-col:first-child { border-left:0; }
-  .wv-col.today { box-shadow:inset 0 0 0 2px var(--today-line); }
   .wv-col:hover { background:var(--soft); }
   .hl { position:absolute; left:0; right:0; border-top:1px solid var(--line); pointer-events:none; }
   .hlab { position:absolute; right:8px; transform:translateY(-50%); font-size:11px; color:var(--muted); }
@@ -141,7 +138,6 @@
   #agenda { display:none; }
   .daycard { appearance:none; text-align:left; width:100%; background:var(--card); border:1px solid var(--line); border-radius:16px; padding:12px 14px; cursor:pointer; display:flex; flex-direction:column; gap:6px; box-shadow:var(--shadow); }
   .daycard:focus-visible { outline:2px solid var(--brand); outline-offset:2px; }
-  .daycard.today { border-color:var(--today-line); box-shadow:0 0 0 1px var(--today-line), var(--shadow); }
   .daycard.past { opacity:.6; }
   .daycard .dh { font-size:14px; font-weight:700; display:flex; gap:8px; align-items:center; }
   .daycard.sun .dh { color:var(--sun); } .daycard.sat .dh { color:var(--sat); }
