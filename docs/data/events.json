@@ -18,18 +18,18 @@
   ],
   "timetable": [
     {
-      "owner": "이윤호", "from": "2026-11-02", "until": "2026-12-18",
+      "owner": "이윤호", "from": "2026-11-02", "until": "2026-12-14",
       "slots": [
-        { "weekday": 1, "start": "14:00", "end": "16:00", "title": "열역학", "place": "2-517" },
-        { "weekday": 2, "start": "09:00", "end": "12:00", "title": "연료전지특론", "place": "2-412" },
-        { "weekday": 2, "start": "13:00", "end": "14:00", "title": "연료전지개론", "place": "2-307" },
-        { "weekday": 2, "start": "14:00", "end": "16:00", "title": "전공실험Ⅱ", "place": "" },
+        { "weekday": 1, "start": "14:00", "end": "16:00", "title": "수업", "place": "" },
+        { "weekday": 2, "start": "09:00", "end": "12:00", "title": "수업", "place": "" },
+        { "weekday": 2, "start": "13:00", "end": "14:00", "title": "수업", "place": "" },
+        { "weekday": 2, "start": "14:00", "end": "16:00", "title": "수업", "place": "" },
         { "weekday": 2, "start": "16:00", "end": "17:00", "title": "상담시간", "place": "" },
-        { "weekday": 3, "start": "09:00", "end": "11:00", "title": "열역학", "place": "2-517" },
-        { "weekday": 3, "start": "14:00", "end": "15:00", "title": "열역학", "place": "2-517" },
+        { "weekday": 3, "start": "09:00", "end": "11:00", "title": "수업", "place": "" },
+        { "weekday": 3, "start": "14:00", "end": "15:00", "title": "수업", "place": "" },
         { "weekday": 3, "start": "16:00", "end": "17:00", "title": "상담시간", "place": "" },
-        { "weekday": 5, "start": "11:00", "end": "12:00", "title": "열역학", "place": "2-517" },
-        { "weekday": 5, "start": "13:00", "end": "15:00", "title": "연료전지개론", "place": "2-307" }
+        { "weekday": 5, "start": "11:00", "end": "12:00", "title": "수업", "place": "" },
+        { "weekday": 5, "start": "13:00", "end": "15:00", "title": "수업", "place": "" }
       ]
     }
   ],

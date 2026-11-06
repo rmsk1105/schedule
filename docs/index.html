@@ -380,7 +380,12 @@
       }
       var list = timed[k].sort(function (a, b) { return a.s - b.s || b.e - a.e; });
       var cluster = [], cEnd = -1, laneEnd = [];
-      var flush = function () { cluster.forEach(function (x) { x.n = laneEnd.length; }); cluster = []; laneEnd = []; cEnd = -1; };
+      var flush = function () {
+        // 시작 시각이 30분 넘게 차이 나면 구글 캘린더처럼 비스듬히 겹쳐 쌓고, 같은 시각에 시작하면 나란히 놓는다
+        var side = cluster.some(function (x, i) { return i > 0 && x.s - cluster[i - 1].s < 30; });
+        cluster.forEach(function (x) { x.n = laneEnd.length; x.side = side; });
+        cluster = []; laneEnd = []; cEnd = -1;
+      };
       list.forEach(function (x) {
         if (cluster.length && x.s >= cEnd) flush();
         var l = 0; while (laneEnd[l] !== undefined && laneEnd[l] > x.s) l++;
@@ -393,7 +398,10 @@
         blk.appendChild(el('small', null, x.it.sp.time));
         blk.style.top = ((x.s - hs * 60) * PX / 60) + 'px';
         blk.style.height = Math.max((x.e - x.s) * PX / 60 - 2, 22) + 'px';
-        blk.style.left = (x.lane / x.n * 100) + '%'; blk.style.width = (100 / x.n) + '%';
+        if (x.n === 1) { blk.style.left = '0'; blk.style.width = '100%'; }
+        else if (x.side) { blk.style.left = (x.lane / x.n * 100) + '%'; blk.style.width = (100 / x.n) + '%'; }
+        else { var off = Math.min(40, 60 / (x.n - 1)) * x.lane; blk.style.left = off + '%'; blk.style.width = (100 - off) + '%'; blk.style.zIndex = String(1 + x.lane); blk.style.boxShadow = '-1px 1px 4px rgba(0,0,0,.15)'; }
+        if ((x.e - x.s) < 45) blk.querySelector('small').style.display = 'none';
         blk.title = x.it.sp.label + ' ' + x.it.sp.time;
         col.appendChild(blk);
       });
