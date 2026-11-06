@@ -370,7 +370,7 @@
           (tt.slots || []).forEach(function (sl) {
             if (sl.weekday !== dow) return;
             var a = parseTime(sl.start + '~' + sl.end); if (!a) return;
-            var tb = el('div', 'ttb'); tb.appendChild(el('b', null, sl.title));
+            var tb = el('div', 'ttb'); tb.appendChild(el('b', null, sl.title + '(' + sl.start + '~' + sl.end + ')'));
             tb.appendChild(document.createTextNode(' ' + (sl.place || '')));
             tb.style.top = ((a.s - hs * 60) * PX / 60) + 'px'; tb.style.height = ((a.e - a.s) * PX / 60 - 2) + 'px';
             tb.title = (tt.label || '수업') + ': ' + sl.title + ' ' + sl.start + '~' + sl.end + (sl.place ? ' ' + sl.place : '');
