@@ -166,6 +166,7 @@
   .item { background:var(--soft); border:1px solid var(--line); border-radius:14px; padding:12px 14px; margin-bottom:8px; }
   .item .t { font-weight:700; font-size:15.5px; }
   .item .s { color:var(--muted); font-size:13.5px; margin-top:3px; white-space:pre-wrap; }
+  .item .s.extra { margin-top:8px; padding-top:8px; border-top:1px dashed var(--line); color:var(--ink); font-weight:600; }
   .tag { display:inline-block; font-size:11.5px; padding:1px 8px; border-radius:999px; margin-right:8px; font-weight:700; vertical-align:1px; }
   .tag.trip, .tag.leave { background:var(--t); color:var(--ink); box-shadow:inset 0 0 0 1px var(--c); }
 
@@ -540,6 +541,7 @@
           if (x.place) lines.push('장소: ' + x.place);
           if (x.desc) lines.push('내용: ' + x.desc);
           if (lines.length) row.appendChild(el('div', 's', lines.join('\n')));
+          (x.extra || []).forEach(function (t) { row.appendChild(el('div', 's extra', t)); });
         } else {
           var e = it.e;
           t.appendChild(el('span', 'tag ' + it.kind, e.type));
