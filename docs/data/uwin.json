@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-11-11T22:34:44.258Z",
-  "rangeFrom": "2026-11-12",
+  "generatedAt": "2026-11-12T22:34:32.129Z",
+  "rangeFrom": "2026-11-13",
   "rangeTo": "2026-12-11",
   "events": [
     {
@@ -38,6 +38,15 @@
       "to": null
     },
     {
+      "name": "이윤호",
+      "type": "출장",
+      "start": "2026-11-16",
+      "end": "2026-11-18",
+      "from": null,
+      "to": null,
+      "purpose": "일반출장"
+    },
+    {
       "name": "장준민",
       "type": "출장",
       "start": "2026-11-16",
@@ -45,6 +54,14 @@
       "from": null,
       "to": null,
       "purpose": "초광역 대학-기업 간 산학협력 우수성과 공유·확산 및"
+    },
+    {
+      "name": "조인주",
+      "type": "출장",
+      "start": "2026-11-18",
+      "end": "2026-11-18",
+      "from": null,
+      "to": null
     },
     {
       "name": "이상욱",
