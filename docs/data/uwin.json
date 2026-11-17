@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-11-16T22:34:58.956Z",
-  "rangeFrom": "2026-11-17",
-  "rangeTo": "2026-12-17",
+  "generatedAt": "2026-11-17T22:34:59.295Z",
+  "rangeFrom": "2026-11-18",
+  "rangeTo": "2026-12-18",
   "events": [
     {
       "name": "이상욱",
@@ -76,6 +76,14 @@
       "type": "연가",
       "start": "2026-11-20",
       "end": "2026-11-20",
+      "from": null,
+      "to": null
+    },
+    {
+      "name": "조인주",
+      "type": "출장",
+      "start": "2026-11-25",
+      "end": "2026-11-25",
       "from": null,
       "to": null
     },
