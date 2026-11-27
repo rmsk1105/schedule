@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-11-26T22:34:32.081Z",
-  "rangeFrom": "2026-11-27",
-  "rangeTo": "2026-12-25",
+  "generatedAt": "2026-11-27T22:34:33.254Z",
+  "rangeFrom": "2026-11-30",
+  "rangeTo": "2026-12-28",
   "events": [
     {
       "name": "이상욱",
@@ -105,6 +105,38 @@
       "purpose": "학회(학술회의)"
     },
     {
+      "name": "김근아",
+      "type": "출장",
+      "start": "2026-11-30",
+      "end": "2026-11-30",
+      "from": null,
+      "to": null
+    },
+    {
+      "name": "윤순영",
+      "type": "출장",
+      "start": "2026-11-30",
+      "end": "2026-11-30",
+      "from": null,
+      "to": null
+    },
+    {
+      "name": "조인주",
+      "type": "출장",
+      "start": "2026-11-30",
+      "end": "2026-11-30",
+      "from": null,
+      "to": null
+    },
+    {
+      "name": "최지현",
+      "type": "출장",
+      "start": "2026-11-30",
+      "end": "2026-11-30",
+      "from": null,
+      "to": null
+    },
+    {
       "name": "장준민",
       "type": "출장",
       "start": "2026-12-02",
@@ -112,6 +144,23 @@
       "from": null,
       "to": null,
       "purpose": "2026 울산 HRD혁신포럼 참석"
+    },
+    {
+      "name": "장준민",
+      "type": "출장",
+      "start": "2026-12-03",
+      "end": "2026-12-03",
+      "from": null,
+      "to": null,
+      "purpose": "2026년 앵커 성과포럼 참석"
+    },
+    {
+      "name": "한범승",
+      "type": "출장",
+      "start": "2026-12-03",
+      "end": "2026-12-03",
+      "from": null,
+      "to": null
     }
   ]
 }
